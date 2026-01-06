@@ -19,6 +19,14 @@ class WordBase(BaseModel):
     )
 
 
+class WordRead(WordBase):
+    id: int = Field(
+        ...,
+        description="id слова",
+        examples=["1"]
+    )
+
+
 class WordCreate(WordBase):
     """Схема для создания нового слова."""
     pass  # Наследуем все поля от WordBase
