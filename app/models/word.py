@@ -1,5 +1,5 @@
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 
@@ -42,4 +42,13 @@ class Word(Base):
         String(100),
         nullable=False,
         comment="Перевод на русский язык"
+    )
+
+    # ДОБАВЛЯЕМ связь с категориями:
+    categories: Mapped[list["Category"]] = relationship(
+        "Category",
+        secondary="word_categories",  # Таблица связи
+        back_populates="words",
+        lazy="selectin",  # Загружаем категории при запросе
+        cascade="all, delete"  # Удалить связи при удалении слова
     )

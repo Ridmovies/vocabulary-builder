@@ -11,6 +11,7 @@ from app.core.config import settings
 from app.models.base import Base
 
 from app.models.word import Word # noqa
+from app.models.category import Category, word_category  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
