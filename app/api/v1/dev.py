@@ -2,6 +2,8 @@ from fastapi import APIRouter
 from sqlalchemy import text
 
 from app.api.deps import DBSession
+from app.core.database import engine
+from app.models import Base
 
 router = APIRouter()
 
@@ -34,3 +36,11 @@ async def check_db(
         "timestamp": "2024-01-15T12:00:00Z",
         "query_result": data
     }
+
+@router.delete("/reset-database")
+async def reset_db():
+    async with engine.begin() as conn:
+        # Полное удаление всех таблиц
+        await conn.run_sync(Base.metadata.drop_all)
+        # Создание всех таблиц заново
+        await conn.run_sync(Base.metadata.create_all)
