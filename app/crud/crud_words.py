@@ -16,6 +16,24 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
     Наследуемся от базового класса и добавляем специфичные методы.
     """
 
+    async def get_multi_with_categories(
+            self,
+            db: AsyncSession,
+            *,
+            skip: int = 0,
+            limit: int = 100,
+            category_ids: list[int] | None = None
+    ) -> list[Word]:
+        query = select(Word).offset(skip).limit(limit)
+        query = query.options(selectinload(Word.categories))
+
+        if category_ids:
+            query = query.join(Word.categories).where(Category.id.in_(category_ids)).distinct()
+
+        result = await db.execute(query)
+        return result.scalars().all()
+
+
     async def create_with_categories(
             self,
             db: AsyncSession,

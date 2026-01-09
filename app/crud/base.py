@@ -5,7 +5,9 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from app.models import Category
 from app.models.base import Base
 
 # Тип переменные для дженериков
@@ -61,6 +63,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         query = select(self.model).offset(skip).limit(limit)
         result = await db.execute(query)
         return result.scalars().all()
+
 
     async def create(
             self,
