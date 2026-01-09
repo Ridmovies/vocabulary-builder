@@ -1,17 +1,31 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
+
 
 from app.api.v1.words import router as words_router
 from app.api.v1.category import router as category_router
 from app.api.v1.typing import router as typing_router
 from app.api.v1.dev import router as dev_router
+from app.core.seed import seed
 
 from app.routers.typing import router as web_typing_router
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic.
+    print("🚀 Starting application...")
+    await seed()
+    yield
 
-app = FastAPI()
+
+
+app = FastAPI(
+    lifespan=lifespan
+)
 
 # Папка с HTML-шаблонами
 templates = Jinja2Templates(directory="templates")
