@@ -21,6 +21,14 @@ async def create_words(
 
 
 
+@router.get("/{word_id}", response_model=WordRead)
+async def get_word(
+        session: DBSession,
+        word_id: int,
+):
+    return await word_crud.get(db=session, id=word_id)
+
+
 @router.delete("/{word_id}", status_code=204)
 async def delete_words(
         session: DBSession,
@@ -38,4 +46,4 @@ async def update_words(
 ):
     # Получаем слово
     word = await word_crud.get(db=session, id=word_id)
-    return await word_crud.update(db=session, obj_in=word_in, db_obj=word)
+    return await word_crud.update_with_categories(db=session, obj_in=word_in, db_obj=word)

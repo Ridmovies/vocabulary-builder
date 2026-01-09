@@ -2,6 +2,8 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
+from app.schemas.category import CategoryRead
+
 
 class WordBase(BaseModel):
     """Базовая схема слова."""
@@ -27,6 +29,7 @@ class WordRead(WordBase):
         description="id слова",
         examples=["1"]
     )
+    categories: list[CategoryRead] | None = None
 
     # category_ids: Optional[List[int]] = Field(
     #     default_factory=list,
@@ -59,7 +62,7 @@ class WordUpdate(BaseModel):
         examples=["привет"]
     )
 
-    # category_ids: Optional[list[int]] = Field(
-    #     None,
-    #     description="Список ID категорий для слова"
-    # )
+    category_ids: Optional[list[int]] = Field(
+        None,
+        description="Список ID категорий для слова"
+    )
