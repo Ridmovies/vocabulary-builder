@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Typing Exercise</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #exercise-container { margin-bottom: 10px; }
+        input { padding: 5px; width: 200px; }
+        button { padding: 5px 10px; margin-left: 10px; }
+        .correct { border: 2px solid green; }
+        .incorrect { border: 2px solid red; }
+    </style>
+</head>
+<body>
+    <h1>Упражнение на письмо</h1>
+
+    <div id="exercise-container">
+        <!-- Сюда подгружается слово -->
+    </div>
+
+    <input type="text" id="answer-input" placeholder="Введите английское слово">
+    <button id="check-btn">Проверить</button>
+
+    <p id="feedback"></p>
+
+    <script>
+        let currentWordId = null;
+
+        async function loadRandomWord(categoryIds = null) {
+            let url = '/api/typing/random';
+            if (categoryIds) {
+                const params = categoryIds.map(id => `category_ids=${id}`).join('&');
+                url += '?' + params;
+            }
+
+            const response = await fetch(url);
+            const word = await response.json();
+
+            currentWordId = word.id;
+
+            const container = document.getElementById('exercise-container');
+            container.innerHTML = `
+                <p>Перевод: <strong>${word.russian}</strong></p>
+                <p>Длина английского слова: ${word.english.length} букв</p>
+                <p>Категории: ${word.categories.map(c => c.name).join(', ')}</p>
+            `;
+
+            const input = document.getElementById('answer-input');
+            input.value = '';
+            input.className = '';
+            input.focus();
+            document.getElementById('feedback').textContent = '';
+        }
+
+        async function checkAnswer() {
+            const answer = document.getElementById('answer-input').value;
+
+            const response = await fetch('/api/typing/check', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({word_id: currentWordId, answer})
+            });
+
+            const result = await response.json();
+            const input = document.getElementById('answer-input');
+            const feedback = document.getElementById('feedback');
+
+            if (result.correct) {
+                input.className = 'correct';
+                feedback.textContent = 'Верно!';
+            } else {
+                input.className = 'incorrect';
+                feedback.textContent = `Неверно! Правильный ответ: ${result.correct_word}`;
+            }
+
+            // Загружаем новое слово через 1.5 секунды
+            setTimeout(() => loadRandomWord(), 1500);
+        }
+
+        document.getElementById('check-btn').addEventListener('click', checkAnswer);
+
+        // Загрузка первого слова при открытии страницы
+        loadRandomWord();
+    </script>
+</body>
+</html>
