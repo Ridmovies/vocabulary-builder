@@ -1,4 +1,4 @@
-from sqlalchemy import String, Table, Column, Integer, ForeignKey
+from sqlalchemy import String, Table, Column, Integer, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -32,10 +32,9 @@ class Category(Base):
 word_category = Table(
     "word_categories",
     Base.metadata,
-    Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("word_id", Integer, ForeignKey("words.id", ondelete="CASCADE"), nullable=False),
-    Column("category_id", Integer, ForeignKey("categories.id", ondelete="CASCADE"), nullable=False),
+    Column("word_id", ForeignKey("words.id", ondelete="CASCADE"), primary_key=True),
+    Column("category_id", ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True),
 
     # Уникальное ограничение: нельзя добавить одну пару дважды
-    # UniqueConstraint("word_id", "category_id", name="uq_word_category"),
+    UniqueConstraint("word_id", "category_id", name="uq_word_category"),
 )

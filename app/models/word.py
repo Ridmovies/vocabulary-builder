@@ -11,14 +11,6 @@ class Word(Base):
     Эта модель представляет таблицу 'words' в базе данных PostgreSQL.
     Каждая строка в таблице - одно слово для изучения.
 
-    Пример использования:
-    >>> word = Word(
-    >>>     english="hello",
-    >>>     russian="привет",
-    >>>     example_en="Hello world!",
-    >>>     example_ru="Привет мир!",
-    >>>     category="greetings"
-    >>> )
     """
 
     # Имя таблицы в базе данных
@@ -50,5 +42,5 @@ class Word(Base):
         secondary="word_categories",  # Таблица связи
         back_populates="words",
         lazy="selectin",  # Загружаем категории при запросе
-        cascade="all, delete"  # Удалить связи при удалении слова
+        # cascade="all, delete"  # Удалить связи при удалении слова
     )
