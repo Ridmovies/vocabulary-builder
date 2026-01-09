@@ -21,44 +21,31 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
             db: AsyncSession,
             *,
             obj_in: WordCreate,
-            # user_id: int
     ) -> Word:
-        """
-        Создать слово с категориями.
-        """
         from app.models.category import Category
 
-        # 1. Извлекаем данные для слова
+        # 1. Создаём слово
         word_data = obj_in.model_dump(exclude={"category_ids"})
-        # word_data["user_id"] = user_id
+        word = Word(**word_data)
 
-        # 2. Создаем объект слова
-        db_obj = Word(**word_data)
-        db.add(db_obj)
-        await db.commit()  # Сначала коммитим слово
-        await db.refresh(db_obj)  # Обновляем объект
-
-        # 3. Добавляем категории, если они указаны
+        # 2. Если есть категории — подгружаем и связываем
         if obj_in.category_ids:
-            # Получаем объекты категорий
-            categories_query = select(Category).where(
-                Category.id.in_(obj_in.category_ids)
+            result = await db.execute(
+                select(Category).where(Category.id.in_(obj_in.category_ids))
             )
-            categories_result = await db.execute(categories_query)
-            categories = categories_result.scalars().all()
+            categories = result.scalars().all()
 
-            # ВАЖНО: Получаем текущий объект из сессии
-            # Иначе категории будут в detached состоянии
-            word = await self.get(db, id=db_obj.id)
+            if len(categories) != len(set(obj_in.category_ids)):
+                raise ValueError("One or more categories not found")
 
-            # Добавляем категории
             word.categories.extend(categories)
-            db.add(word)
-            await db.commit()
-            await db.refresh(word)
 
-            return word
+        # 3. Один add + один commit
+        db.add(word)
+        await db.commit()
+        await db.refresh(word)
 
-        return db_obj
+        return word
+
 
 word_crud = CRUDWord(Word)
