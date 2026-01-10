@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.crud.base import CRUDBase
-from app.models import word_category, Category
+from app.models import word_category, Category, favorite_words
 from app.models.word import Word
 from app.schemas.words import WordCreate, WordUpdate
 
@@ -22,6 +22,8 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
             *,
             skip: int = 0,
             limit: int = 100,
+            user_id : Optional[int] = None,
+            is_favorite : bool = False,
             category_ids: list[int] | None = None
     ) -> list[Word]:
         query = select(Word).offset(skip).limit(limit)
@@ -29,6 +31,17 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
 
         if category_ids:
             query = query.join(Word.categories).where(Category.id.in_(category_ids)).distinct()
+
+        # 🔹 Только избранные слова пользователя
+        if is_favorite:
+            if not user_id:
+                raise ValueError("user_id обязателен при is_favorite=True")
+
+            query = (
+                query
+                .join(favorite_words)
+                .where(favorite_words.c.user_id == user_id)
+            )
 
         result = await db.execute(query)
         return result.scalars().all()
