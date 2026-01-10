@@ -41,8 +41,31 @@ async def get_current_user(
     if not access_token:
         return None
 
-    # 2. Проверка CSRF для опасных методов
-    if check_csrf and request.method in ["POST", "PUT", "PATCH", "DELETE"]:
+    # # 2. Проверка CSRF для опасных методов
+    # if check_csrf and request.method in ["POST", "PUT", "PATCH", "DELETE"]:
+    #     csrf_token = request.headers.get(settings.CSRF_TOKEN_HEADER_NAME)
+    #     csrf_cookie = get_token_from_cookie(request, "csrf")
+    #
+    #     if not csrf_token or not csrf_cookie:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_403_FORBIDDEN,
+    #             detail="CSRF токен отсутствует"
+    #         )
+    #
+    #     if not verify_csrf_token(csrf_token, csrf_cookie):
+    #         raise HTTPException(
+    #             status_code=status.HTTP_403_FORBIDDEN,
+    #             detail="Неверный CSRF токен"
+    #         )
+
+    # ПРОВЕРКА: если в разработке - пропускаем CSRF
+    is_development = settings.MODE == "DEV"
+
+    # Проверка CSRF (пропускаем в dev режиме)
+    if (check_csrf and
+            not is_development and  # ← Вот это важно!
+            request.method in ["POST", "PUT", "PATCH", "DELETE"]):
+
         csrf_token = request.headers.get(settings.CSRF_TOKEN_HEADER_NAME)
         csrf_cookie = get_token_from_cookie(request, "csrf")
 

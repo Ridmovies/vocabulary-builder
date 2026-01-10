@@ -111,7 +111,7 @@ def set_auth_cookies(
             key=settings.REFRESH_TOKEN_COOKIE_NAME,
             value=refresh_token,
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-            path="/api/v1/auth",  # Только для эндпоинтов refresh
+            path="/api/auth",  # Только для эндпоинтов refresh
             secure=settings.ACCESS_TOKEN_COOKIE_SECURE,
             httponly=True,
             samesite=settings.ACCESS_TOKEN_COOKIE_SAMESITE
