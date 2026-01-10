@@ -24,7 +24,7 @@ async def get_current_user(
         request: Request,
         db: AsyncSession = Depends(get_db),
         check_csrf: bool = True  # Проверять CSRF для опасных методов
-) -> Optional[dict]:
+) -> Optional[User]:
     """
     Получить текущего пользователя из куки.
 
@@ -100,13 +100,15 @@ async def get_current_user(
     # 5. Обновить last_login (опционально)
     # Можно добавить здесь
 
-    return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "is_superuser": user.is_superuser,
-        "is_verified": user.is_verified
-    }
+    # return {
+    #     "id": user.id,
+    #     "username": user.username,
+    #     "email": user.email,
+    #     "is_superuser": user.is_superuser,
+    #     "is_verified": user.is_verified
+    # }
+
+    return user
 
 
 # Аннотированный тип для зависимостей, представляющий текущего пользователя

@@ -1,6 +1,6 @@
 from sqlalchemy import String, Boolean
 from sqlalchemy.dialects.postgresql import BYTEA
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models import Base
 
@@ -28,3 +28,10 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    favorite_words: Mapped[list["Word"]] = relationship(
+        "Word",
+        secondary="favorite_words",
+        lazy="selectin",
+        back_populates="favorited_by",
+    )

@@ -44,3 +44,10 @@ class Word(Base):
         lazy="selectin",  # Загружаем категории при запросе
         # cascade="all, delete"  # Удалить связи при удалении слова
     )
+
+    favorited_by: Mapped[list["User"]] = relationship(
+        "User",
+        secondary="favorite_words",
+        lazy="selectin",
+        back_populates="favorite_words",
+    )

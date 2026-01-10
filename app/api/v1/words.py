@@ -5,6 +5,7 @@ from fastapi import APIRouter, Query
 from app.api.deps import DBSession, UserDep
 from app.crud.crud_words import word_crud
 from app.schemas.words import WordCreate, WordRead, WordUpdate
+from app.services.favorites import FavoriteService
 from app.services.typing import TypingService
 
 router = APIRouter()
@@ -77,6 +78,16 @@ async def check_answer(
         answer=answer,
     )
 
+@router.get("/favorites", response_model=list[WordRead])
+async def get_favorites(
+    session: DBSession,
+    current_user: UserDep,
+):
+    return await FavoriteService.get_favorites(
+        session=session,
+        user_id=current_user.id,
+    )
+
 
 
 @router.get("/{word_id}", response_model=WordRead)
@@ -108,3 +119,31 @@ async def update_words(
     # Получаем слово
     word = await word_crud.get(db=session, id=word_id)
     return await word_crud.update_with_categories(db=session, obj_in=word_in, db_obj=word)
+
+
+@router.post("/favorites/{word_id}")
+async def add_to_favorites(
+    word_id: int,
+    session: DBSession,
+    current_user: UserDep,
+):
+    await FavoriteService.add_to_favorites(
+        session=session,
+        user_id=current_user.id,
+        word_id=word_id,
+    )
+    return {"status": "added"}
+
+
+@router.delete("/favorites/{word_id}")
+async def remove_from_favorites(
+    word_id: int,
+    session: DBSession,
+    current_user: UserDep,
+):
+    await FavoriteService.remove_from_favorites(
+        session=session,
+        user_id=current_user.id,
+        word_id=word_id,
+    )
+    return {"status": "removed"}
