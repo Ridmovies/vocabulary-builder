@@ -1,4 +1,4 @@
-from sqlalchemy import String
+from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -35,6 +35,14 @@ class Word(Base):
         nullable=False,
         comment="Перевод на русский язык"
     )
+
+    # Владелец слова
+    owner_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    owner: Mapped["User"] = relationship("User")
 
     # ДОБАВЛЯЕМ связь с категориями:
     categories: Mapped[list["Category"]] = relationship(

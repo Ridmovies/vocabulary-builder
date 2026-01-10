@@ -52,12 +52,15 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
             db: AsyncSession,
             *,
             obj_in: WordCreate,
+            owner_id: int | None,  # системное слово = None
     ) -> Word:
-        from app.models.category import Category
 
         # 1. Создаём слово
         word_data = obj_in.model_dump(exclude={"category_ids"})
-        word = Word(**word_data)
+        word = Word(
+            **word_data,
+            owner_id=owner_id,
+        )
 
         # 2. Если есть категории — подгружаем и связываем
         if obj_in.category_ids:

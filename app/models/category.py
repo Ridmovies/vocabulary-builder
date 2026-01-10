@@ -19,6 +19,15 @@ class Category(Base):
         String(100)
     )
 
+    # Владелец категории
+    owner_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+
+    owner: Mapped["User"] = relationship("User")
+
     # Связи
     words: Mapped[list["Word"]] = relationship(
         "Word",
@@ -36,5 +45,5 @@ word_category = Table(
     Column("category_id", ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True),
 
     # Уникальное ограничение: нельзя добавить одну пару дважды
-    UniqueConstraint("word_id", "category_id", name="uq_word_category"),
+    # UniqueConstraint("word_id", "category_id", name="uq_word_category"),
 )

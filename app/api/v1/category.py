@@ -21,7 +21,11 @@ async def create_category(
         current_user: UserDep,
         category_in: CategoryCreate,
 ):
-    return await category_crud.create(db=session, obj_in=category_in)
+    return await category_crud.create_for_user(
+        db=session,
+        obj_in=category_in,
+        owner_id=current_user.id
+    )
 
 
 

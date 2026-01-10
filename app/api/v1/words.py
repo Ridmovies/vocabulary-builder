@@ -38,7 +38,11 @@ async def create_words(
         current_user: UserDep,
         word_in: WordCreate,
 ):
-    return await word_crud.create_with_categories(db=session, obj_in=word_in)
+    return await word_crud.create_with_categories(
+        db=session,
+        obj_in=word_in,
+        owner_id=current_user.id
+    )
 
 
 
