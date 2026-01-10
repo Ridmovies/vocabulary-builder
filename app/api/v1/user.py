@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-from sqlalchemy.sql import crud
 from starlette.responses import Response
 
 from app.api.deps import DBSession

@@ -12,3 +12,9 @@ class UserCreate(UserBase):
 
 class UserRead(UserBase):
     id: int
+
+
+class UserLogin(BaseModel):
+    """Схема для входа."""
+    email: str 
+    password: str

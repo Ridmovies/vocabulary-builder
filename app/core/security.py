@@ -151,3 +151,29 @@ def get_token_from_cookie(request: Request, token_type: str = "access") -> Optio
         return None
 
     return request.cookies.get(cookie_name)
+
+
+def create_access_token(user_id: int, username: str, email: str) -> str:
+    """Создать access токен."""
+    return create_jwt_token(
+        data={
+            "sub": str(user_id),
+            "username": username,
+            "email": email
+        },
+        token_type="access"
+    )
+
+
+def create_refresh_token(user_id: int) -> str:
+    """Создать refresh токен."""
+    return create_jwt_token(
+        data={"sub": str(user_id)},
+        token_type="refresh"
+    )
+
+
+def create_csrf_token() -> str:
+    """Создать CSRF токен."""
+    return secrets.token_urlsafe(32)
+
