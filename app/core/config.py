@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     # - В облаке: "postgresql+asyncpg://user:pass@aws.compute.amazonaws.com/db"
 
     # JWT настройки
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
 
     # Access токен

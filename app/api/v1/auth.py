@@ -89,4 +89,5 @@ async def read_users_me(
     """
     Получить информацию о текущем пользователе.
     """
-    return await user_crud.get(db=session, id=current_user["id"])
+    return await user_crud.get(db=session, id=current_user.id)
+
