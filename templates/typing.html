@@ -6,14 +6,31 @@
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
         #exercise-container { margin-bottom: 10px; }
-        input { padding: 5px; width: 200px; }
-        button { padding: 5px 10px; margin-left: 10px; }
+        input, select { padding: 5px; width: 200px; margin-right: 10px; }
+        button { padding: 5px 10px; }
         .correct { border: 2px solid green; }
         .incorrect { border: 2px solid red; }
     </style>
 </head>
 <body>
     <h1>Упражнение на письмо</h1>
+
+    <!-- Фильтры -->
+    <div id="filters">
+        <label>
+            Категория:
+            <select id="category-select">
+                <option value="">Все</option>
+            </select>
+        </label>
+        <label>
+            <input type="checkbox" id="favorite-checkbox">
+            Только избранное
+        </label>
+        <button id="apply-filters-btn">Применить фильтры</button>
+    </div>
+
+    <hr>
 
     <div id="exercise-container">
         <!-- Сюда подгружается слово -->
@@ -26,12 +43,31 @@
 
     <script>
         let currentWordId = null;
+        let selectedCategoryId = null;
+        let favoriteOnly = false;
 
-        async function loadRandomWord(categoryIds = null) {
-            let url = '/api/typing/random';
-            if (categoryIds) {
-                const params = categoryIds.map(id => `category_ids=${id}`).join('&');
-                url += '?' + params;
+        async function loadCategories() {
+            // Загружаем список категорий с сервера
+            const response = await fetch('/api/categories');
+            const categories = await response.json();
+
+            const select = document.getElementById('category-select');
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                select.appendChild(option);
+            });
+        }
+
+        async function loadRandomWord() {
+            let url = '/api/typing/random?';
+
+            if (selectedCategoryId) {
+                url += `category_ids=${selectedCategoryId}&`;
+            }
+            if (favoriteOnly) {
+                url += `is_favorite=true&`;
             }
 
             const response = await fetch(url);
@@ -74,14 +110,19 @@
                 feedback.textContent = `Неверно! Правильный ответ: ${result.correct_word}`;
             }
 
-            // Загружаем новое слово через 1.5 секунды
             setTimeout(() => loadRandomWord(), 1500);
         }
 
         document.getElementById('check-btn').addEventListener('click', checkAnswer);
 
-        // Загрузка первого слова при открытии страницы
-        loadRandomWord();
+        document.getElementById('apply-filters-btn').addEventListener('click', () => {
+            selectedCategoryId = document.getElementById('category-select').value || null;
+            favoriteOnly = document.getElementById('favorite-checkbox').checked;
+            loadRandomWord();
+        });
+
+        // Инициализация страницы
+        loadCategories().then(() => loadRandomWord());
     </script>
 </body>
 </html>

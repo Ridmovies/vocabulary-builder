@@ -10,6 +10,9 @@ CATEGORIES = [
     {"name": "Basic", "description": "Самые простые слова"},
     {"name": "Food", "description": "Еда и напитки"},
     {"name": "Animals", "description": "Животные"},
+    {"name": "difficult", "description": "Сложные слова"},
+    {"name": "phrasal verbs", "description": "Фразовый глагол"},
+
 ]
 
 WORDS = [
@@ -32,7 +35,30 @@ WORDS = [
     {"english": "tree", "russian": "дерево", "categories": ["Basic"]},
     {"english": "book", "russian": "книга", "categories": ["Basic"]},
     {"english": "chair", "russian": "стул", "categories": ["Basic"]},
-    {"english": "bread", "russian": "хлеб", "categories": ["Food"]},  # дубликат для примера
+    {"english": "bread", "russian": "хлеб", "categories": ["Food"]}, # дубликат для примера
+
+    {"english": "arrangement", "russian": "договоренность", "categories": ["difficult"]},
+
+    {"english": "take off", "russian": "снимать (одежду), взлетать", "categories": ["phrasal verbs"]},
+    {"english": "turn on", "russian": "включать", "categories": ["phrasal verbs"]},
+    {"english": "turn off", "russian": "выключать", "categories": ["phrasal verbs"]},
+    {"english": "get up", "russian": "вставать", "categories": ["phrasal verbs"]},
+    {"english": "go on", "russian": "продолжать", "categories": ["phrasal verbs"]},
+    {"english": "come back", "russian": "возвращаться", "categories": ["phrasal verbs"]},
+    {"english": "find out", "russian": "узнавать, выяснять", "categories": ["phrasal verbs"]},
+    {"english": "give up", "russian": "сдаваться, бросать", "categories": ["phrasal verbs"]},
+    {"english": "look for", "russian": "искать", "categories": ["phrasal verbs"]},
+    {"english": "look after", "russian": "присматривать, заботиться", "categories": ["phrasal verbs"]},
+    {"english": "run out", "russian": "заканчиваться", "categories": ["phrasal verbs"]},
+    {"english": "set up", "russian": "настраивать, организовывать", "categories": ["phrasal verbs"]},
+    {"english": "pick up", "russian": "подбирать, забирать", "categories": ["phrasal verbs"]},
+    {"english": "put on", "russian": "надевать", "categories": ["phrasal verbs"]},
+    {"english": "put off", "russian": "откладывать", "categories": ["phrasal verbs"]},
+    {"english": "bring up", "russian": "поднимать тему, воспитывать", "categories": ["phrasal verbs"]},
+    {"english": "break down", "russian": "ломаться", "categories": ["phrasal verbs"]},
+    {"english": "carry on", "russian": "продолжать", "categories": ["phrasal verbs"]},
+    {"english": "come across", "russian": "случайно встретить", "categories": ["phrasal verbs"]},
+    {"english": "wake up", "russian": "просыпаться", "categories": ["phrasal verbs"]},
 ]
 
 async def seed():
