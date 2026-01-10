@@ -1,4 +1,5 @@
 from sqlalchemy import String, Boolean
+from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models import Base
@@ -21,7 +22,7 @@ class User(Base):
         index=True,
         nullable=False
     )
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    hashed_password: Mapped[bytes] = mapped_column(BYTEA)
 
     # Активность
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
