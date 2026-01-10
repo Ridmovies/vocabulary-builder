@@ -5,8 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.requests import Request
 
+from app.core.config import settings
 from app.core.database import AsyncSessionLocal
-from app.core.security import decode_jwt_token
+from app.core.security import decode_jwt_token, get_token_from_cookie, verify_csrf_token
+from app.crud.crud_user import user_crud
+from app.models import User
 
 
 async def get_db():
@@ -66,7 +69,7 @@ async def get_current_user(
     if not user_id:
         return None
 
-    user = await crud_user.get(db, id=int(user_id))
+    user = await user_crud.get(db, id=int(user_id))
 
     if not user or not user.is_active:
         return None
@@ -81,3 +84,7 @@ async def get_current_user(
         "is_superuser": user.is_superuser,
         "is_verified": user.is_verified
     }
+
+
+# Аннотированный тип для зависимостей, представляющий текущего пользователя
+UserDep: type[User] = Annotated[User, Depends(get_current_user)]

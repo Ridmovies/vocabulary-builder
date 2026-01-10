@@ -3,12 +3,12 @@ from starlette import status
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.api.deps import DBSession
-from app.core.security import set_auth_cookies, create_access_token, create_refresh_token, create_csrf_token
+from app.api.deps import DBSession, UserDep
+from app.core.security import set_auth_cookies, create_access_token, create_refresh_token, create_csrf_token, \
+    clear_auth_cookies
 from app.crud import crud_user
 from app.crud.crud_user import user_crud
-from app.schemas.user import UserLogin
-
+from app.schemas.user import UserLogin, UserRead
 
 router = APIRouter()
 
@@ -65,3 +65,29 @@ async def login(
     # Можно добавить здесь
 
     return {"access_token": access_token, "refresh_token": refresh_token, "csrf_token": csrf_token}
+
+
+@router.post("/logout")
+async def logout(
+        response: Response,
+        current_user: UserDep
+):
+    """
+    Выход пользователя.
+
+    Удаляет все аутентификационные куки.
+    """
+    clear_auth_cookies(response)
+
+    return {"message": "Успешный выход"}
+
+
+@router.get("/me", response_model=UserRead)
+async def read_users_me(
+    current_user: UserDep,
+    session: DBSession,
+):
+    """
+    Получить информацию о текущем пользователе.
+    """
+    return await user_crud.get(db=session, id=current_user["id"])

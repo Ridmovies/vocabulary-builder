@@ -153,6 +153,22 @@ def get_token_from_cookie(request: Request, token_type: str = "access") -> Optio
     return request.cookies.get(cookie_name)
 
 
+def clear_auth_cookies(response: Response) -> None:
+    """Очистить аутентификационные куки."""
+    cookies_to_clear = [
+        settings.ACCESS_TOKEN_COOKIE_NAME,
+        settings.REFRESH_TOKEN_COOKIE_NAME,
+        settings.CSRF_TOKEN_COOKIE_NAME
+    ]
+
+    for cookie_name in cookies_to_clear:
+        response.delete_cookie(
+            key=cookie_name,
+            path="/",
+            domain=settings.ACCESS_TOKEN_COOKIE_DOMAIN
+        )
+
+
 def create_access_token(user_id: int, username: str, email: str) -> str:
     """Создать access токен."""
     return create_jwt_token(
@@ -176,4 +192,18 @@ def create_refresh_token(user_id: int) -> str:
 def create_csrf_token() -> str:
     """Создать CSRF токен."""
     return secrets.token_urlsafe(32)
+
+
+def verify_csrf_token(csrf_token: str, csrf_cookie: str) -> bool:
+    """
+    Проверить CSRF токен.
+
+    Args:
+        csrf_token: Токен из заголовка X-CSRF-Token
+        csrf_cookie: Токен из куки
+
+    Returns:
+        True если токены совпадают
+    """
+    return secrets.compare_digest(csrf_token, csrf_cookie)
 

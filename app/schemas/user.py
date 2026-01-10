@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserBase(BaseModel):
@@ -16,5 +16,8 @@ class UserRead(UserBase):
 
 class UserLogin(BaseModel):
     """Схема для входа."""
-    email: str 
+    email: str = Field(
+        ...,
+        examples=["user@example.com"]
+    )
     password: str
