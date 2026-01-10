@@ -35,6 +35,8 @@ word_category = Table(
     Column("word_id", ForeignKey("words.id", ondelete="CASCADE"), primary_key=True),
     Column("category_id", ForeignKey("categories.id", ondelete="CASCADE"), primary_key=True),
 
-    # Уникальное ограничение: нельзя добавить одну пару дважды
-    UniqueConstraint("word_id", "category_id", name="uq_word_category"),
+    __table_args__=(
+        # Уникальное ограничение: нельзя добавить одну пару дважды
+        UniqueConstraint("word_id", "category_id", name="uq_word_category"),
+    )
 )
