@@ -6,7 +6,6 @@ from starlette.responses import Response
 from app.api.deps import DBSession, UserDep
 from app.core.security import set_auth_cookies, create_access_token, create_refresh_token, create_csrf_token, \
     clear_auth_cookies
-from app.crud import crud_user
 from app.crud.crud_user import user_crud
 from app.schemas.user import UserLogin, UserRead
 
