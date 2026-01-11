@@ -35,4 +35,4 @@ async def delete_category(
         current_user: UserDep,
         category_id: int,
 ):
-    return await category_crud.remove(db=session, id=category_id)
+    return await category_crud.remove_for_user(db=session, category_id=category_id, owner_id=current_user.id)
