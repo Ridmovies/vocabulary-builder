@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создать слово</title>
+</head>
+<body>
+    <h1>Создать новое слово</h1>
+
+    {% if message %}
+        <p style="color:green;">{{ message }}</p>
+        <p>Слово: {{ created_word.english }} - {{ created_word.russian }}</p>
+        <p>Категории:
+            {% for cat in created_word.categories %}
+                {{ cat.name }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    {% endif %}
+
+    <form action="" method="post">
+        <label>Английское слово:</label><br>
+        <input type="text" name="english" required><br><br>
+
+        <label>Русский перевод:</label><br>
+        <input type="text" name="russian" required><br><br>
+
+        <label>Категории (ID через запятую):</label><br>
+        <input type="text" name="category_ids"><br><br>
+
+        <button type="submit">Создать слово</button>
+    </form>
+</body>
+</html>
