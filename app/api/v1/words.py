@@ -1,6 +1,7 @@
 from random import choice
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
+from starlette import status
 
 from app.api.deps import DBSession, UserDep
 from app.crud.crud_words import word_crud
@@ -11,7 +12,15 @@ from app.services.typing import TypingService
 router = APIRouter()
 
 
-@router.get("", response_model=list[WordRead])
+@router.get(
+    "",
+    response_model=list[WordRead],
+    summary="Получить слова с фильтром и пагинацией",
+    description=(
+            "Фильтр по категориям. Можно указать список ID категорий. "
+            "Возвращаются только слова из системных категорий (owner_id=None) и ваших категорий."
+    ),
+)
 async def get_words(
     session: DBSession,
     current_user: UserDep,
@@ -26,18 +35,33 @@ async def get_words(
     """
     return await word_crud.get_multi_with_categories(
         db=session,
+        user_id=current_user.id,
         skip=skip,
         limit=limit,
         category_ids=category_ids,
     )
 
 
-@router.post("", response_model=WordRead, status_code=201)
+@router.post(
+    "",
+    response_model=WordRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Создать новое слово",
+    description=(
+        "Создаёт новое слово и связывает его с категориями текущего пользователя.\n\n"
+        "- Пользователь может добавлять слово **только в свои категории**.\n"
+        "- Системные или чужие категории использовать нельзя.\n"
+        "- Возвращает созданное слово с его категориями."
+    ),
+)
 async def create_words(
-        session: DBSession,
-        current_user: UserDep,
-        word_in: WordCreate,
+    session: DBSession,
+    current_user: UserDep,
+    word_in: WordCreate,
 ):
+    """
+    Создать слово с привязкой к категориям пользователя.
+    """
     return await word_crud.create_with_categories(
         db=session,
         obj_in=word_in,
@@ -76,8 +100,13 @@ async def get_random_word(
         user_id=current_user.id,
         category_ids=category_ids,
     )
-    word = choice(words)
-    return word
+    if not words:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="В выбранной категории нет слов"
+        )
+
+    return choice(words)
 
 
 @router.post("/check")

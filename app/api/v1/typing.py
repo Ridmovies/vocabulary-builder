@@ -1,6 +1,7 @@
 from random import choice
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
+from starlette import status
 
 from app.api.deps import DBSession, UserDep
 from app.crud.crud_words import word_crud
@@ -31,8 +32,13 @@ async def get_random_word(
         limit=limit,
         category_ids=category_ids,
     )
-    word = choice(words)
-    return word
+    if not words:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="В выбранной категории нет слов"
+        )
+
+    return choice(words)
 
 
 @router.post("/check")

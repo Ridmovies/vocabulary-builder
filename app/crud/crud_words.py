@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -22,59 +22,116 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
             *,
             skip: int = 0,
             limit: int = 100,
-            user_id : Optional[int] = None,
-            is_favorite : bool = False,
+            user_id: int,
+            is_favorite: bool = False,
             category_ids: list[int] | None = None
     ) -> list[Word]:
+        """
+        Получить слова с пагинацией и фильтром по категориям.
+        Слова берутся из категорий пользователя и системных категорий.
+        """
+
         query = select(Word).offset(skip).limit(limit)
         query = query.options(selectinload(Word.categories))
 
-        if category_ids:
-            query = query.join(Word.categories).where(Category.id.in_(category_ids)).distinct()
+        # 🔹 Если указаны категории, проверяем их владельцев
+        if category_ids and user_id is not None:
+            result = await db.execute(
+                select(Category).where(Category.id.in_(category_ids))
+            )
+            categories = result.scalars().all()
 
-        # 🔹 Только избранные слова пользователя
+            # Проверяем, что все категории доступны пользователю или системные
+            for cat in categories:
+                if cat.owner_id not in (None, user_id):
+                    raise ValueError(f"Категория {cat.id} недоступна пользователю")
+
+            # Фильтруем слова по этим категориям
+            query = query.join(Word.categories).where(Category.id.in_(category_ids))
+        else:
+            # Берём все свои категории + системные
+            if user_id is not None:
+                query = query.join(Word.categories).where(
+                    or_(Category.owner_id == user_id, Category.owner_id.is_(None))
+                )
+
+        query = query.distinct()
+
+        # 🔹 Только избранные слова
         if is_favorite:
             if not user_id:
                 raise ValueError("user_id обязателен при is_favorite=True")
-
-            query = (
-                query
-                .join(favorite_words)
-                .where(favorite_words.c.user_id == user_id)
-            )
+            query = query.join(favorite_words).where(favorite_words.c.user_id == user_id)
 
         result = await db.execute(query)
         return result.scalars().all()
 
+    # async def create_with_categories(
+    #         self,
+    #         db: AsyncSession,
+    #         *,
+    #         obj_in: WordCreate,
+    #         owner_id: int | None,  # системное слово = None
+    # ) -> Word:
+    #
+    #     # 1. Создаём слово
+    #     word_data = obj_in.model_dump(exclude={"category_ids"})
+    #     word = Word(
+    #         **word_data,
+    #         owner_id=owner_id,
+    #     )
+    #
+    #     # 2. Если есть категории — подгружаем и связываем
+    #     if obj_in.category_ids:
+    #         result = await db.execute(
+    #             select(Category).where(Category.id.in_(obj_in.category_ids))
+    #         )
+    #         categories = result.scalars().all()
+    #
+    #         if len(categories) != len(set(obj_in.category_ids)):
+    #             raise ValueError("One or more categories not found")
+    #
+    #         word.categories.extend(categories)
+    #
+    #     # 3. Один add + один commit
+    #     db.add(word)
+    #     await db.commit()
+    #     await db.refresh(word)
+    #
+    #     return word
 
     async def create_with_categories(
             self,
             db: AsyncSession,
             *,
             obj_in: WordCreate,
-            owner_id: int | None,  # системное слово = None
+            owner_id: int,  # обязательно, т.к. слово создаётся пользователем
     ) -> Word:
-
+        """
+        Создать слово и связать его только с категориями текущего пользователя.
+        """
         # 1. Создаём слово
         word_data = obj_in.model_dump(exclude={"category_ids"})
-        word = Word(
-            **word_data,
-            owner_id=owner_id,
-        )
+        word = Word(**word_data, owner_id=owner_id)
 
         # 2. Если есть категории — подгружаем и связываем
         if obj_in.category_ids:
+            # Берём только категории пользователя
             result = await db.execute(
-                select(Category).where(Category.id.in_(obj_in.category_ids))
+                select(Category).where(
+                    Category.id.in_(obj_in.category_ids),
+                    Category.owner_id == owner_id  # только свои категории
+                )
             )
             categories = result.scalars().all()
 
+            # Проверка: все указанные категории должны принадлежать пользователю
             if len(categories) != len(set(obj_in.category_ids)):
-                raise ValueError("One or more categories not found")
+                raise ValueError("Все категории должны принадлежать текущему пользователю")
 
             word.categories.extend(categories)
 
-        # 3. Один add + один commit
+        # 3. Сохраняем
         db.add(word)
         await db.commit()
         await db.refresh(word)

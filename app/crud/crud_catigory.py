@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
@@ -11,6 +11,28 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
     """
     CRUD operations for Category model
     """
+
+    async def get_multi_for_user(
+            self,
+            db: AsyncSession,
+            *,
+            user_id: int,
+            skip: int = 0,
+            limit: int = 100
+    ) -> list[Category]:
+        """
+        Получить категории, доступные пользователю:
+        - системные (owner_id IS NULL)
+        - пользовательские (owner_id == user_id)
+        """
+        query = (
+            select(Category)
+            .where(or_(Category.owner_id.is_(None), Category.owner_id == user_id))
+            .offset(skip)
+            .limit(limit)
+        )
+        result = await db.execute(query)
+        return result.scalars().all()
 
     async def create_for_user(
         self,
