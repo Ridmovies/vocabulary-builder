@@ -1,194 +1,51 @@
-<!-- templates/login.html -->
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .login-box {
+            width: 320px;
+            margin: 100px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0,0,0,.1);
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 8px;
+        }
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
 
-{% block title %}Вход - Vocabulary Builder{% endblock %}
+<div class="login-box">
+    <h2>Вход</h2>
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">
-                    <i class="fas fa-sign-in-alt me-2"></i>Вход в систему
-                </h4>
-            </div>
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
 
-            <div class="card-body">
-                <!-- Форма логина -->
-                <form id="loginForm" method="post" action="/login">
-                    <!-- CSRF токен (важно!) -->
-                    <input type="hidden" name="csrf_token" id="csrfTokenInput">
-
-                    <!-- Email -->
-                    <div class="mb-3">
-                        <label for="email" class="form-label">
-                            <i class="fas fa-envelope me-1"></i>Email
-                        </label>
-                        <input type="email"
-                               class="form-control"
-                               id="email"
-                               name="email"
-                               placeholder="user@example.com"
-                               required>
-                        <div class="form-text">Введите ваш email</div>
-                    </div>
-
-                    <!-- Пароль -->
-                    <div class="mb-3">
-                        <label for="password" class="form-label">
-                            <i class="fas fa-lock me-1"></i>Пароль
-                        </label>
-                        <div class="input-group">
-                            <input type="password"
-                                   class="form-control"
-                                   id="password"
-                                   name="password"
-                                   placeholder="Введите пароль"
-                                   required>
-                            <button class="btn btn-outline-secondary"
-                                    type="button"
-                                    id="togglePassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <div class="form-text">
-                            <a href="/forgot-password" class="text-decoration-none">
-                                Забыли пароль?
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Запомнить меня -->
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                        <label class="form-check-label" for="remember">Запомнить меня</label>
-                    </div>
-
-                    <!-- Кнопка отправки -->
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-sign-in-alt me-2"></i>Войти
-                        </button>
-                    </div>
-                </form>
-
-                <!-- Разделитель -->
-                <div class="text-center my-4">
-                    <span class="text-muted">или</span>
-                </div>
-
-                <!-- Ссылка на регистрацию -->
-                <div class="text-center">
-                    <p class="mb-0">Нет аккаунта?
-                        <a href="/register" class="text-decoration-none">Зарегистрируйтесь</a>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Сообщения об ошибках -->
-            {% if error %}
-            <div class="card-footer bg-danger text-white">
-                <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Демо аккаунт -->
-        <div class="mt-4 card">
-            <div class="card-body">
-                <h6 class="card-title">
-                    <i class="fas fa-info-circle me-2"></i>Для тестирования:
-                </h6>
-                <p class="mb-1"><strong>Email:</strong> test@example.com</p>
-                <p class="mb-0"><strong>Пароль:</strong> Test123!</p>
-            </div>
-        </div>
-    </div>
+    <form method="post" action="/login">
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Пароль" required>
+        <button type="submit">Войти</button>
+    </form>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-    // Показать/скрыть пароль
-    document.getElementById('togglePassword').addEventListener('click', function() {
-        const passwordInput = document.getElementById('password');
-        const icon = this.querySelector('i');
-
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            icon.className = 'fas fa-eye-slash';
-        } else {
-            passwordInput.type = 'password';
-            icon.className = 'fas fa-eye';
-        }
-    });
-
-    // Получить CSRF токен при загрузке страницы
-    document.addEventListener('DOMContentLoaded', function() {
-        fetch('/api/auth/csrf', {
-            credentials: 'include'
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('csrfTokenInput').value = data.csrf_token;
-        })
-        .catch(error => console.error('Ошибка получения CSRF токена:', error));
-    });
-
-    // Обработка формы
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const formData = new FormData(this);
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-
-        // Показываем индикатор загрузки
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Вход...';
-        submitBtn.disabled = true;
-
-        try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': document.getElementById('csrfTokenInput').value
-                },
-                body: JSON.stringify({
-                    email: formData.get('email'),
-                    password: formData.get('password')
-                }),
-                credentials: 'include'  // Важно для кук!
-            });
-
-            if (response.ok) {
-                // Успешный вход, перенаправляем на dashboard
-                window.location.href = '/typing';
-            } else {
-                const error = await response.json();
-                showError(error.detail || 'Ошибка входа');
-            }
-        } catch (error) {
-            showError('Ошибка сети');
-        } finally {
-            // Восстанавливаем кнопку
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-
-    function showError(message) {
-        // Создаем алерт с ошибкой
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
-        alertDiv.innerHTML = `
-            <i class="fas fa-exclamation-circle me-2"></i>${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-
-        // Вставляем перед формой
-        const form = document.getElementById('loginForm');
-        form.parentNode.insertBefore(alertDiv, form);
-    }
-</script>
-{% endblock %}
+</body>
+</html>

@@ -11,10 +11,23 @@ from fastapi import APIRouter, Request, Depends, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 
-from app.api.deps import DBSession, UserDep
+from app.api.deps import DBSession, UserDep, get_db
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+
+@router.get("/", response_class=HTMLResponse)
+async def index(
+        request: Request,
+        user: UserDep,
+):
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )
 
 @router.get("/typing", response_class=HTMLResponse)
 async def typing_page(request: Request):
@@ -57,20 +70,56 @@ async def create_word_form(
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
-    """Страница входа."""
-    # Если уже авторизован - перенаправляем
-    from app.api.deps import get_current_user
-    current_user = await get_current_user(request)
-
-    if current_user:
-        return RedirectResponse("/typing", status_code=303)
-
     return templates.TemplateResponse(
         "login.html",
         {
             "request": request,
-            "current_user": None,
-            "page_title": "Вход",
-            "error": None
         }
     )
+
+
+@router.post("/login", response_class=HTMLResponse)
+async def login_form(
+        request: Request,
+        response: Response,
+        session: DBSession,
+        email: str = Form(...),
+        password: str = Form(...),
+
+):
+    user = await user_crud.authenticate(
+        db=session,
+        email=email,
+        password=password
+    )
+
+    if not user:
+        return templates.TemplateResponse(
+            "login.html",
+            {
+                "request": request,
+                "error": "Неверный email или пароль"
+            },
+            status_code=401
+        )
+
+    access_token = create_access_token(
+        user_id=user.id,
+        username=user.username,
+        email=user.email
+    )
+
+    refresh_token = create_refresh_token(user_id=user.id)
+    csrf_token = create_csrf_token()
+
+    set_auth_cookies(
+        response=response,
+        access_token=access_token,
+        refresh_token=refresh_token,
+        csrf_token=csrf_token
+    )
+
+    # редирект после успешного логина
+    response.headers["Location"] = "/"
+    response.status_code = status.HTTP_302_FOUND
+    return response

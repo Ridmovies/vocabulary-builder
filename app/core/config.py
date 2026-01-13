@@ -33,8 +33,8 @@ class Settings(BaseSettings):
 
     # Access токен
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 15 минут для безопасности
-    ACCESS_TOKEN_COOKIE_NAME: str = "access_token"
-    ACCESS_TOKEN_COOKIE_PATH: str = "/api"
+    ACCESS_TOKEN_COOKIE_NAME: str = "access"
+    ACCESS_TOKEN_COOKIE_PATH: str = "/"
     ACCESS_TOKEN_COOKIE_DOMAIN: str | None = None
     ACCESS_TOKEN_COOKIE_SECURE: bool = False  # True в production с HTTPS
     ACCESS_TOKEN_COOKIE_HTTPONLY: bool = True  # Защита от XSS
@@ -42,10 +42,12 @@ class Settings(BaseSettings):
 
     # Refresh токен (опционально, но рекомендуется)
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
-    REFRESH_TOKEN_COOKIE_NAME: str = "refresh_token"
+    REFRESH_TOKEN_COOKIE_NAME: str = "refresh"
+    REFRESH_TOKEN_COOKIE_PATH: str = "/"
 
     # CSRF защита
-    CSRF_TOKEN_COOKIE_NAME: str = "csrftoken"
+    CSRF_TOKEN_COOKIE_NAME: str = "csrf"
+    CSRF_TOKEN_COOKIE_PATH: str = "/"
     CSRF_TOKEN_HEADER_NAME: str = "X-CSRF-Token"
     CSRF_SECRET_KEY: str = secrets.token_urlsafe(32)
 
