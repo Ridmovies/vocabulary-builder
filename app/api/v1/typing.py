@@ -30,6 +30,7 @@ async def get_random_word(
         db=session,
         skip=skip,
         limit=limit,
+        user_id=current_user.id,
         category_ids=category_ids,
     )
     if not words:

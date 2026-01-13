@@ -1,5 +1,12 @@
-{% if user %}
-  Привет, {{ user.username }}
-{% else %}
-  <a href="/login">Войти</a>
-{% endif %}
+<nav>
+    <a href="/">Главная</a>
+
+    {% if user %}
+        <a href="/create-word">Добавить слово</a>
+        <a href="/typing">Тренировка</a>
+        <span>👤 {{ user.username }}</span>
+        <a href="/logout">Выйти</a>
+    {% else %}
+        <a href="/login">Войти</a>
+    {% endif %}
+</nav>
