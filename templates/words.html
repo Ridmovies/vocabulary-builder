@@ -1,0 +1,356 @@
+<!-- templates/words.html -->
+{% extends "base.html" %}
+
+{% block title %}Мои слова{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Мои слова</h1>
+        <a href="/create-word" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Добавить слово
+        </a>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Категории</label>
+                    <div id="categoriesFilter" class="d-flex flex-wrap gap-2">
+                        <!-- Категории загрузятся через JS -->
+                        <span class="text-muted">Загрузка...</span>
+                    </div>
+                    <input type="hidden" id="selectedCategoryIds"
+                           value="{{ initial_category_ids|join(',') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Показать</label>
+                    <select class="form-select" id="limitSelect">
+                        <option value="20">20 слов</option>
+                        <option value="50">50 слов</option>
+                        <option value="100" selected>100 слов</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button id="applyFilter" class="btn btn-outline-primary w-100">
+                        Применить фильтр
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список слов -->
+    <div class="card">
+        <div class="card-body">
+            <div id="wordsList" class="list-group">
+                <!-- Слова загрузятся через JS -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка слов...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Пагинация -->
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center" id="pagination">
+                    <!-- Пагинация загрузится через JS -->
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentPage = 1;
+let totalPages = 1;
+let allCategories = [];
+let selectedCategoryIds = [];
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', function() {
+    // Загружаем категории
+    loadCategories();
+
+    // Загружаем первую страницу слов
+    loadWords();
+
+    // Обработчики событий
+    document.getElementById('applyFilter').addEventListener('click', function() {
+        currentPage = 1;
+        loadWords();
+    });
+
+    document.getElementById('limitSelect').addEventListener('change', function() {
+        currentPage = 1;
+        loadWords();
+    });
+});
+
+// Загрузка категорий
+async function loadCategories() {
+    try {
+        const response = await fetch('/api/categories', {
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            allCategories = await response.json();
+            renderCategoriesFilter();
+
+            // Инициализируем выбранные категории из hidden поля
+            const initialIds = document.getElementById('selectedCategoryIds').value;
+            if (initialIds) {
+                selectedCategoryIds = initialIds.split(',').map(id => parseInt(id));
+                updateCategoriesFilter();
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки категорий:', error);
+    }
+}
+
+// Отрисовка фильтра категорий
+function renderCategoriesFilter() {
+    const container = document.getElementById('categoriesFilter');
+    container.innerHTML = '';
+
+    allCategories.forEach(category => {
+        const isSelected = selectedCategoryIds.includes(category.id);
+
+        const tag = document.createElement('span');
+        tag.className = `badge category-tag ${isSelected ? 'bg-primary' : 'bg-secondary'}`;
+        tag.style.cursor = 'pointer';
+        tag.textContent = category.name;
+
+        tag.addEventListener('click', () => {
+            toggleCategory(category.id);
+        });
+
+        container.appendChild(tag);
+    });
+}
+
+// Переключение категории
+function toggleCategory(categoryId) {
+    const index = selectedCategoryIds.indexOf(categoryId);
+
+    if (index === -1) {
+        selectedCategoryIds.push(categoryId);
+    } else {
+        selectedCategoryIds.splice(index, 1);
+    }
+
+    updateCategoriesFilter();
+}
+
+// Обновление отображения фильтра
+function updateCategoriesFilter() {
+    const tags = document.querySelectorAll('#categoriesFilter .category-tag');
+
+    tags.forEach(tag => {
+        const categoryId = allCategories.find(c => c.name === tag.textContent)?.id;
+
+        if (selectedCategoryIds.includes(categoryId)) {
+            tag.className = 'badge category-tag bg-primary';
+        } else {
+            tag.className = 'badge category-tag bg-secondary';
+        }
+    });
+}
+
+// Загрузка слов
+async function loadWords() {
+    const limit = parseInt(document.getElementById('limitSelect').value);
+
+    // Собираем URL с параметрами
+    let url = `/api/words?skip=${(currentPage - 1) * limit}&limit=${limit}`;
+
+    if (selectedCategoryIds.length > 0) {
+        url += `&category_ids=${selectedCategoryIds.join('&category_ids=')}`;
+    }
+
+    try {
+        const response = await fetch(url, {
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            const words = await response.json();
+            renderWords(words);
+            updatePagination();
+        } else {
+            showError('Ошибка загрузки слов');
+        }
+    } catch (error) {
+        console.error('Ошибка сети:', error);
+        showError('Ошибка сети');
+    }
+}
+
+// Отрисовка списка слов
+function renderWords(words) {
+    const container = document.getElementById('wordsList');
+
+    if (words.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                <h5>Слова не найдены</h5>
+                <p class="text-muted">Попробуйте изменить фильтры или добавьте новые слова</p>
+                <a href="/create-word" class="btn btn-primary">Добавить слово</a>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+
+    words.forEach(word => {
+        const categoriesHtml = word.categories && word.categories.length > 0
+            ? word.categories.map(c =>
+                `<span class="badge bg-secondary me-1">${c.name}</span>`
+              ).join('')
+            : '<span class="text-muted">Без категории</span>';
+
+        html += `
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">${word.english}</h5>
+                        <p class="mb-1">${word.russian}</p>
+                        <small>${categoriesHtml}</small>
+                    </div>
+                    <div>
+                        <a href="/words/${word.id}/edit" class="btn btn-sm btn-outline-primary me-1">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteWord(${word.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// Пагинация
+function updatePagination() {
+    const container = document.getElementById('pagination');
+    const limit = parseInt(document.getElementById('limitSelect').value);
+
+    // TODO: нужно знать общее количество слов для правильной пагинации
+    // Пока делаем простую версию
+
+    let html = '';
+
+    // Кнопка "Назад"
+    html += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+    `;
+
+    // Номер текущей страницы
+    html += `
+        <li class="page-item active">
+            <span class="page-link">${currentPage}</span>
+        </li>
+    `;
+
+    // Кнопка "Вперед"
+    html += `
+        <li class="page-item">
+            <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+    `;
+
+    container.innerHTML = html;
+}
+
+// Смена страницы
+function changePage(newPage) {
+    if (newPage < 1) return;
+    currentPage = newPage;
+    loadWords();
+}
+
+// Удаление слова
+async function deleteWord(wordId) {
+    if (!confirm('Удалить это слово?')) return;
+
+    try {
+        const response = await fetch(`/api/words/${wordId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            // Перезагружаем список слов
+            loadWords();
+            showMessage('Слово удалено', 'success');
+        } else {
+            showError('Ошибка при удалении');
+        }
+    } catch (error) {
+        console.error('Ошибка сети:', error);
+        showError('Ошибка сети');
+    }
+}
+
+// Вспомогательные функции
+function showMessage(text, type) {
+    // Удаляем старые сообщения
+    const oldMessages = document.querySelectorAll('.alert');
+    oldMessages.forEach(msg => msg.remove());
+
+    // Создаем новое сообщение
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+    alertDiv.innerHTML = `
+        ${text}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+
+    // Вставляем в начало контента
+    const content = document.querySelector('.container');
+    content.insertBefore(alertDiv, content.firstChild);
+}
+
+function showError(text) {
+    showMessage(text, 'danger');
+}
+</script>
+
+<style>
+.category-tag {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.category-tag:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+.list-group-item {
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

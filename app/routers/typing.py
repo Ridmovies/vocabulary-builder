@@ -6,7 +6,7 @@ from app.crud.crud_user import user_crud
 from app.crud.crud_words import word_crud
 from app.schemas.words import WordCreate
 
-from fastapi import APIRouter, Request, Form
+from fastapi import APIRouter, Request, Form, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 
@@ -44,4 +44,33 @@ async def create_word_page(
     return templates.TemplateResponse(
         "create_word.html",
         {"request": request, "current_user": current_user}
+    )
+
+@router.get("/my-words", response_class=HTMLResponse)
+async def words_page(
+    request: Request,
+    current_user: UserDep,
+    category_ids: list[int] | None = Query(
+        None, description="Фильтр по категориям"
+    )
+):
+    """Страница со списком слов."""
+    return templates.TemplateResponse(
+        "words.html",
+        {
+            "request": request,
+            "current_user": current_user,
+            "initial_category_ids": category_ids or []
+        }
+    )
+
+
+@router.get("/typing-exercise", response_class=HTMLResponse)
+async def typing_exercise_page(request: Request):
+    """
+    Страница с упражнениями на набор текста
+    """
+    return templates.TemplateResponse(
+        "typing_exercise.html",
+        {"request": request}
     )

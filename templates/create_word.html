@@ -21,6 +21,16 @@
                 <input type="text" class="form-control" id="russian" required>
             </div>
 
+            <!-- Категория -->
+            <div class="mb-3">
+                <label for="category_id" class="form-label">Категория</label>
+                <select class="form-select" id="category_id">
+                    <option value="">Без категории</option>
+                    <!-- Категории будут загружены динамически -->
+                </select>
+                <div class="form-text">Выберите категорию для слова (только ваши категории)</div>
+            </div>
+
             <!-- Кнопка -->
             <button type="submit" class="btn btn-primary">Сохранить</button>
         </form>
@@ -30,35 +40,98 @@
 </div>
 
 <script>
+// Загружаем категории пользователя при загрузке страницы
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadUserCategories();
+});
+
+async function loadUserCategories() {
+    try {
+        const response = await fetch('/api/categories?scope=mine&limit=1000', {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'},
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            const categories = await response.json();
+            populateCategorySelect(categories);
+        } else {
+            console.error('Ошибка загрузки категорий');
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+    }
+}
+
+function populateCategorySelect(categories) {
+    const select = document.getElementById('category_id');
+
+    // Сохраняем первый option "Без категории"
+    const firstOption = select.options[0];
+    select.innerHTML = '';
+    select.appendChild(firstOption);
+
+    // Добавляем категории пользователя
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category.id;
+        option.textContent = category.name;
+
+        // Добавляем иконку или метку для пользовательских категорий
+        if (category.owner_id) {
+            option.textContent += ' (моя)';
+        }
+
+        select.appendChild(option);
+    });
+}
+
 document.getElementById('createWordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Собираем данные
+    // Получаем выбранную категорию
+    const categorySelect = document.getElementById('category_id');
+    const selectedCategoryId = categorySelect.value;
+
+    // Собираем данные В ПРАВИЛЬНОМ ФОРМАТЕ
     const wordData = {
         english: document.getElementById('english').value.trim(),
-        russian: document.getElementById('russian').value.trim()
+        russian: document.getElementById('russian').value.trim(),
+        category_ids: selectedCategoryId ? [parseInt(selectedCategoryId)] : []
     };
 
-    // Валидация
+    // Валидация обязательных полей
     if (!wordData.english || !wordData.russian) {
-        showMessage('Заполните оба поля', 'danger');
+        showMessage('Заполните оба обязательных поля', 'danger');
         return;
     }
 
-    // Отправляем
-    const response = await fetch('/api/words', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(wordData),
-        credentials: 'include'
-    });
+    // Отправляем запрос
+    try {
+        console.log('Отправляемые данные:', wordData); // Для отладки
 
-    if (response.ok) {
-        showMessage('Слово сохранено!', 'success');
-        document.getElementById('createWordForm').reset();
-    } else {
-        const error = await response.json();
-        showMessage(error.detail || 'Ошибка', 'danger');
+        const response = await fetch('/api/words', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(wordData),
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        console.log('Ответ сервера:', data); // Для отладки
+
+        if (response.ok) {
+            showMessage('Слово успешно сохранено!', 'success');
+            document.getElementById('createWordForm').reset();
+
+            // Сбрасываем категорию на значение по умолчанию
+            document.getElementById('category_id').selectedIndex = 0;
+        } else {
+            showMessage(data.detail || 'Ошибка при сохранении слова', 'danger');
+        }
+    } catch (error) {
+        showMessage('Ошибка сети: ' + error.message, 'danger');
     }
 });
 
@@ -66,6 +139,14 @@ function showMessage(text, type) {
     const div = document.getElementById('message');
     div.className = `alert alert-${type}`;
     div.textContent = text;
+
+    // Автоматическое скрытие сообщения об успехе через 3 секунды
+    if (type === 'success') {
+        setTimeout(() => {
+            div.className = '';
+            div.textContent = '';
+        }, 3000);
+    }
 }
 </script>
 {% endblock %}

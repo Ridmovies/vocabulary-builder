@@ -31,11 +31,6 @@ class WordRead(WordBase):
     )
     categories: list[CategoryRead] | None = None
 
-    # category_ids: Optional[List[int]] = Field(
-    #     default_factory=list,
-    #     description="ID категорий для слова"
-    # )
-
 
 class WordCreate(WordBase):
     """Схема для создания слова с категориями."""

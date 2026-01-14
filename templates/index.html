@@ -1,12 +1,292 @@
-<nav>
-    <a href="/">Главная</a>
+<!-- templates/index.html -->
+{% extends "base.html" %}
 
-    {% if user %}
-        <a href="/create-word">Добавить слово</a>
-        <a href="/typing">Тренировка</a>
-        <span>👤 {{ user.username }}</span>
-        <a href="/logout">Выйти</a>
-    {% else %}
-        <a href="/login">Войти</a>
-    {% endif %}
-</nav>
+{% block title %}Главная - English Learning{% endblock %}
+
+{% block content %}
+<!-- Герой секция -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Учите английские слова <br>эффективно
+                </h1>
+                <p class="lead mb-4">
+                    Добавляйте слова, тренируйтесь в наборе и отслеживайте свой прогресс.
+                    Простой и удобный способ расширить словарный запас.
+                </p>
+                {% if not user %}
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="/register" class="btn btn-light btn-lg px-4 me-md-2">
+                        Начать учиться
+                    </a>
+                    <a href="/login" class="btn btn-outline-light btn-lg px-4">
+                        Войти в аккаунт
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="/typing-exercise" class="btn btn-light btn-lg px-4 me-md-2">
+                        <i class="bi bi-play-circle me-2"></i>
+                        Начать тренировку
+                    </a>
+                    <a href="/create-word" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Добавить слово
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://cdn-icons-png.flaticon.com/512/3208/3208720.png"
+                     alt="Learning English"
+                     class="img-fluid"
+                     style="max-height: 300px;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Особенности -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="mb-3">Как это работает?</h2>
+                <p class="text-muted">Всего три простых шага к успеху</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <!-- Карточка 1 -->
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-plus-circle display-6 text-primary"></i>
+                        </div>
+                        <h4 class="card-title">1. Добавляйте слова</h4>
+                        <p class="card-text">
+                            Создайте свою собственную базу слов с переводами.
+                            Организуйте слова по категориям для удобства.
+                        </p>
+                        {% if user %}
+                        <a href="/create-word" class="btn btn-outline-primary">
+                            Добавить слово
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка 2 -->
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-keyboard display-6 text-success"></i>
+                        </div>
+                        <h4 class="card-title">2. Тренируйтесь</h4>
+                        <p class="card-text">
+                            Практикуйте написание английских слов.
+                            Тренировка на скорость и точность поможет лучше запомнить слова.
+                        </p>
+                        {% if user %}
+                        <a href="/typing-exercise" class="btn btn-outline-success">
+                            Начать тренировку
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка 3 -->
+            <div class="col-md-4">
+                <div class="card feature-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-graph-up display-6 text-info"></i>
+                        </div>
+                        <h4 class="card-title">3. Отслеживайте прогресс</h4>
+                        <p class="card-text">
+                            Наблюдайте за своим развитием.
+                            Статистика покажет ваши сильные стороны и что нужно улучшить.
+                        </p>
+                        {% if user %}
+                        <a href="/stats" class="btn btn-outline-info">
+                            Посмотреть статистику
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if user %}
+<!-- Статистика пользователя -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-center mb-4">Ваша статистика</h2>
+            </div>
+        </div>
+        <div class="row g-4 text-center">
+            <!-- Количество слов -->
+            <div class="col-md-3 col-sm-6">
+                <div class="p-4 bg-white rounded-3 shadow-sm">
+                    <div class="stat-number" id="words-count">0</div>
+                    <p class="text-muted mb-0">Слов в базе</p>
+                </div>
+            </div>
+
+            <!-- Категории -->
+            <div class="col-md-3 col-sm-6">
+                <div class="p-4 bg-white rounded-3 shadow-sm">
+                    <div class="stat-number" id="categories-count">0</div>
+                    <p class="text-muted mb-0">Категорий</p>
+                </div>
+            </div>
+
+            <!-- Тренировки -->
+            <div class="col-md-3 col-sm-6">
+                <div class="p-4 bg-white rounded-3 shadow-sm">
+                    <div class="stat-number" id="practice-count">0</div>
+                    <p class="text-muted mb-0">Тренировок</p>
+                </div>
+            </div>
+
+            <!-- Избранные -->
+            <div class="col-md-3 col-sm-6">
+                <div class="p-4 bg-white rounded-3 shadow-sm">
+                    <div class="stat-number" id="favorites-count">0</div>
+                    <p class="text-muted mb-0">Избранных слов</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Последние слова -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <h2>Последние добавленные слова</h2>
+                <a href="/my-words" class="btn btn-outline-primary">
+                    Все слова
+                </a>
+            </div>
+        </div>
+        <div class="row" id="recent-words">
+            <!-- Слова загружаются динамически -->
+            <div class="col-12 text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Загружаем статистику
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadUserStats();
+    await loadRecentWords();
+});
+
+async function loadUserStats() {
+    try {
+        // Загружаем статистику пользователя
+        const responses = await Promise.all([
+            fetch('/api/words?limit=1').then(r => r.json()),
+            fetch('/api/categories?scope=mine').then(r => r.json()),
+            // Добавьте другие запросы статистики здесь
+        ]);
+
+        // Обновляем счетчики
+        document.getElementById('words-count').textContent = responses[0].length;
+        document.getElementById('categories-count').textContent = responses[1].length;
+
+    } catch (error) {
+        console.error('Ошибка загрузки статистики:', error);
+    }
+}
+
+async function loadRecentWords() {
+    try {
+        const response = await fetch('/api/words?limit=5&order_by=created_at&order=desc');
+        const words = await response.json();
+
+        const container = document.getElementById('recent-words');
+        if (words.length === 0) {
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        У вас пока нет слов. <a href="/create-word">Добавьте первое слово!</a>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        words.forEach(word => {
+            html += `
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">${word.english}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">${word.russian}</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                ${word.categories?.map(c => `<span class="badge bg-secondary">${c.name}</span>`).join(' ') || 'Без категории'}
+                            </small>
+                        </p>
+                        <p class="card-text">
+                            <small>Добавлено: ${new Date(word.created_at).toLocaleDateString()}</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Ошибка загрузки слов:', error);
+        document.getElementById('recent-words').innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger">
+                    Не удалось загрузить слова
+                </div>
+            </div>
+        `;
+    }
+}
+</script>
+{% endif %}
+
+<!-- Призыв к действию -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="mb-4">Начните учить английский прямо сейчас!</h2>
+        <p class="lead mb-4">
+            Присоединяйтесь к тысячам пользователей, которые уже улучшили свой английский.
+        </p>
+        {% if not user %}
+        <a href="/register" class="btn btn-light btn-lg px-5">
+            Создать аккаунт бесплатно
+        </a>
+        {% else %}
+        <a href="/typing-exercise" class="btn btn-light btn-lg px-5">
+            <i class="bi bi-play-fill me-2"></i>
+            Продолжить обучение
+        </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
