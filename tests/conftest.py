@@ -14,6 +14,7 @@ from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from app.api.deps import get_db
+from app.crud.crud_catigory import category_crud
 from app.main import app
 from app.models import Base
 
@@ -107,3 +108,37 @@ async def auth_client(async_client: AsyncClient):
     async_client.headers.pop("Authorization", None)
 
 
+
+@pytest.fixture
+async def seed_categories(db_session):
+    categories = [
+        {"name": "Cat1", "description": "desc 1"},
+        {"name": "Cat2", "description": "desc 2"},
+        {"name": "Cat3", "description": "desc 3"},
+    ]
+    for c in categories:
+        await category_crud.create(db_session, obj_in=c)
+    await db_session.commit()
+    yield
+
+
+@pytest.fixture
+async def user_seed_data(db_session, auth_client):
+    """
+    Создаёт сиды для тестов:
+    - Категории, привязанные к пользователю auth_client
+    - Упражнения
+    """
+    # Получаем текущего пользователя из токена auth_client
+    # Здесь предполагаем, что auth_client уже залогинен
+    # Делаем GET /me для получения id
+    response = await auth_client.get("/api/auth/me")
+    assert response.status_code == 200, response.text
+    current_user = response.json()
+    user_id = current_user["id"]
+
+    category = {"name": f"test_category", "description": f"test_category", "owner_id": user_id}
+    await category_crud.create(db_session, obj_in=category)
+
+    await db_session.commit()
+    yield
