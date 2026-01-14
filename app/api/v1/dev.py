@@ -37,6 +37,16 @@ async def check_db(
         "query_result": data
     }
 
+@router.get("/db-info")
+async def db_info(session: DBSession):
+    engine = session.get_bind()
+
+    return {
+        "dialect": engine.dialect.name,
+        "driver": engine.dialect.driver,
+        "url": str(engine.url),
+    }
+
 @router.delete("/reset-database")
 async def reset_db():
     async with engine.begin() as conn:
