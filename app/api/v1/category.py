@@ -22,6 +22,10 @@ from fastapi import Query
 async def get_categories(
     session: DBSession,
     current_user: UserDep,
+    scope = Query(
+        "all",
+        description="Область категорий: all | system | mine"
+    ),
     skip: int = Query(
         0,
         ge=0,
@@ -43,6 +47,7 @@ async def get_categories(
     return await category_crud.get_multi_for_user(
         db=session,
         user_id=current_user.id,
+        scope=scope,
         skip=skip,
         limit=limit
     )

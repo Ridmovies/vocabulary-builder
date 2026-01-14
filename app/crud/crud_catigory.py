@@ -17,21 +17,36 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
             db: AsyncSession,
             *,
             user_id: int,
+            scope: str = "all",
             skip: int = 0,
-            limit: int = 100
+            limit: int = 100,
     ) -> list[Category]:
         """
-        Получить категории, доступные пользователю:
-        - системные (owner_id IS NULL)
-        - пользовательские (owner_id == user_id)
+        Получить категории:
+        - all    → системные + пользовательские
+        - system → только системные
+        - mine   → только пользователя
         """
-        query = (
-            select(Category)
-            .where(or_(Category.owner_id.is_(None), Category.owner_id == user_id))
-            .offset(skip)
-            .limit(limit)
-        )
-        result = await db.execute(query)
+
+        stmt = select(Category)
+
+        if scope == "system":
+            stmt = stmt.where(Category.owner_id.is_(None))
+
+        elif scope == "mine":
+            stmt = stmt.where(Category.owner_id == user_id)
+
+        else:  # all
+            stmt = stmt.where(
+                or_(
+                    Category.owner_id.is_(None),
+                    Category.owner_id == user_id,
+                )
+            )
+
+        stmt = stmt.offset(skip).limit(limit)
+
+        result = await db.execute(stmt)
         return result.scalars().all()
 
     async def create_for_user(
