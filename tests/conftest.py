@@ -80,3 +80,30 @@ async def async_client():
         base_url="http://test",
     ) as client:
         yield client
+
+
+@pytest.fixture
+async def auth_client(async_client: AsyncClient):
+    """
+    Фикстура возвращает AsyncClient с заголовком Authorization для тестового пользователя.
+    """
+    # ARRANGE: создаем пользователя
+    reg_data = {"email": "user_pytest@example.com", "username": "user_pytest", "password": "string"}
+    response = await async_client.post("/api/users/register", json=reg_data)
+    assert response.status_code == 201, response.text
+
+    # ACT: логинимся
+    log_data = {"email": "user_pytest@example.com", "password": "string"}
+    response = await async_client.post("/api/auth/login", json=log_data)
+    assert response.status_code == 200, response.text
+
+    token = response.json()["access_token"]
+
+    # Добавляем токен в заголовки клиента
+    async_client.headers.update({"Authorization": f"Bearer {token}"})
+    yield async_client
+
+    # Очистка: можно сбросить токен после теста
+    async_client.headers.pop("Authorization", None)
+
+

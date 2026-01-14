@@ -39,7 +39,10 @@ async def get_current_user(
     access_token = get_token_from_cookie(request, "access")
 
     if not access_token:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated"
+        )
 
     # # 2. Проверка CSRF для опасных методов
     # if check_csrf and request.method in ["POST", "PUT", "PATCH", "DELETE"]:
@@ -90,7 +93,10 @@ async def get_current_user(
     # 4. Получить пользователя из БД
     user_id = payload.get("sub")
     if not user_id:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload"
+        )
 
     user = await user_crud.get(db, id=int(user_id))
 
