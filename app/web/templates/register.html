@@ -1,0 +1,353 @@
+<!-- templates/register.html -->
+{% extends "base.html" %}
+
+{% block title %}Регистрация - English Learning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 p-md-5">
+                    <!-- Заголовок -->
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            <i class="bi bi-person-plus display-4 text-primary"></i>
+                        </div>
+                        <h1 class="h2 mb-2">Создать аккаунт</h1>
+                        <p class="text-muted">
+                            Присоединяйтесь к English Learning и начните учить английский эффективно
+                        </p>
+                    </div>
+
+                    {% if user %}
+                    <!-- Если пользователь уже авторизован -->
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Вы уже авторизованы как <strong>{{ user.username }}</strong>.
+                        <div class="mt-2">
+                            <a href="/" class="btn btn-sm btn-outline-primary me-2">На главную</a>
+                            <a href="/logout" class="btn btn-sm btn-outline-secondary">Выйти</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Форма регистрации -->
+                    <form id="registerForm" novalidate>
+                        <div class="row g-3">
+                            <!-- Email -->
+                            <div class="col-12">
+                                <label for="email" class="form-label">
+                                    <i class="bi bi-envelope me-1"></i>
+                                    Email адрес *
+                                </label>
+                                <input type="email"
+                                       class="form-control form-control-lg"
+                                       id="email"
+                                       placeholder="example@mail.ru"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Пожалуйста, введите корректный email адрес
+                                </div>
+                                <div class="form-text">
+                                    Мы никогда не передадим ваш email третьим лицам
+                                </div>
+                            </div>
+
+                            <!-- Имя пользователя -->
+                            <div class="col-12">
+                                <label for="username" class="form-label">
+                                    <i class="bi bi-person me-1"></i>
+                                    Имя пользователя *
+                                </label>
+                                <input type="text"
+                                       class="form-control form-control-lg"
+                                       id="username"
+                                       placeholder="Придумайте имя для профиля"
+                                       minlength="3"
+                                       maxlength="50"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Имя пользователя должно быть от 3 до 50 символов
+                                </div>
+                                <div class="form-text">
+                                    Это имя будет отображаться в вашем профиле
+                                </div>
+                            </div>
+
+                            <!-- Пароль -->
+                            <div class="col-12">
+                                <label for="password" class="form-label">
+                                    <i class="bi bi-lock me-1"></i>
+                                    Пароль *
+                                </label>
+                                <input type="password"
+                                       class="form-control form-control-lg"
+                                       id="password"
+                                       placeholder="Придумайте надежный пароль"
+                                       minlength="6"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Пароль должен быть не менее 6 символов
+                                </div>
+                                <div class="form-text">
+                                    Используйте минимум 6 символов, включая буквы и цифры
+                                </div>
+                            </div>
+
+                            <!-- Подтверждение пароля -->
+                            <div class="col-12">
+                                <label for="confirmPassword" class="form-label">
+                                    <i class="bi bi-lock-fill me-1"></i>
+                                    Подтверждение пароля *
+                                </label>
+                                <input type="password"
+                                       class="form-control form-control-lg"
+                                       id="confirmPassword"
+                                       placeholder="Повторите пароль"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Пароли не совпадают
+                                </div>
+                            </div>
+
+                            <!-- Согласие с условиями -->
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        Я согласен с
+                                        <a href="/terms" class="text-decoration-none">Условиями использования</a>
+                                        и
+                                        <a href="/privacy" class="text-decoration-none">Политикой конфиденциальности</a>
+                                    </label>
+                                    <div class="invalid-feedback">
+                                        Необходимо принять условия использования
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Кнопка регистрации -->
+                            <div class="col-12 mt-3">
+                                <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                                    <i class="bi bi-person-plus me-2"></i>
+                                    Зарегистрироваться
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Сообщения -->
+                    <div id="message" class="mt-4"></div>
+
+                    <!-- Разделитель -->
+                    <div class="text-center my-4">
+                        <span class="text-muted">Уже есть аккаунт?</span>
+                    </div>
+
+                    <!-- Ссылка на вход -->
+                    <div class="text-center">
+                        <a href="/login" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Войти в существующий аккаунт
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Преимущества -->
+            <div class="card mt-4 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-star me-2 text-warning"></i>
+                        Преимущества регистрации
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <i class="bi bi-book text-primary fs-4 me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Своя база слов</h6>
+                                    <p class="text-muted small mb-0">Добавляйте и организуйте слова по категориям</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <i class="bi bi-graph-up text-success fs-4 me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Отслеживание прогресса</h6>
+                                    <p class="text-muted small mb-0">Наблюдайте за своим развитием с помощью статистики</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <i class="bi bi-device-phone text-info fs-4 me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Доступ с любого устройства</h6>
+                                    <p class="text-muted small mb-0">Занимайтесь на компьютере, планшете или телефоне</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if not user %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const messageDiv = document.getElementById('message');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Валидация формы
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Сбрасываем предыдущие сообщения
+        messageDiv.innerHTML = '';
+        messageDiv.className = '';
+
+        // Проверка валидности формы
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        // Проверка совпадения паролей
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (password !== confirmPassword) {
+            document.getElementById('confirmPassword').classList.add('is-invalid');
+            showMessage('Пароли не совпадают', 'danger');
+            return;
+        } else {
+            document.getElementById('confirmPassword').classList.remove('is-invalid');
+        }
+
+        // Подготавливаем данные
+        const userData = {
+            email: document.getElementById('email').value.trim(),
+            username: document.getElementById('username').value.trim(),
+            password: password
+        };
+
+        // Блокируем кнопку
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Регистрация...';
+        submitBtn.disabled = true;
+
+        try {
+            // Отправляем запрос на регистрацию
+            const response = await fetch('/api/users/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData),
+                credentials: 'include' // Для получения cookies при автовходе
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Успешная регистрация
+                showMessage(`
+                    <div class="text-center">
+                        <i class="bi bi-check-circle display-4 text-success mb-3"></i>
+                        <h4>Регистрация успешна!</h4>
+                        <p class="mb-0">Добро пожаловать, <strong>${result.username}</strong>!</p>
+                        <p class="mb-3">Вы будете перенаправлены на главную страницу...</p>
+                    </div>
+                `, 'success');
+
+                // Перенаправляем на главную через 2 секунды
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+
+            } else {
+                // Ошибка регистрации
+                let errorMessage = 'Ошибка при регистрации';
+
+                if (result.detail) {
+                    if (typeof result.detail === 'string') {
+                        errorMessage = result.detail;
+                    } else if (Array.isArray(result.detail)) {
+                        errorMessage = result.detail.map(err => err.msg).join(', ');
+                    } else if (result.detail.msg) {
+                        errorMessage = result.detail.msg;
+                    }
+                }
+
+                showMessage(errorMessage, 'danger');
+
+                // Подсвечиваем поле с ошибкой
+                if (result.detail && typeof result.detail === 'string') {
+                    if (result.detail.toLowerCase().includes('email')) {
+                        document.getElementById('email').classList.add('is-invalid');
+                    } else if (result.detail.toLowerCase().includes('username')) {
+                        document.getElementById('username').classList.add('is-invalid');
+                    }
+                }
+            }
+        } catch (error) {
+            // Ошибка сети
+            showMessage('Ошибка сети: ' + error.message, 'danger');
+            console.error('Ошибка регистрации:', error);
+        } finally {
+            // Разблокируем кнопку
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+
+    // Валидация в реальном времени для подтверждения пароля
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+
+        if (confirmPassword && password !== confirmPassword) {
+            this.classList.add('is-invalid');
+        } else {
+            this.classList.remove('is-invalid');
+        }
+    });
+
+    // Сбрасываем валидацию при изменении полей
+    form.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.classList.contains('is-invalid')) {
+                this.classList.remove('is-invalid');
+            }
+            form.classList.remove('was-validated');
+        });
+    });
+});
+
+function showMessage(text, type) {
+    const messageDiv = document.getElementById('message');
+    messageDiv.innerHTML = text;
+    messageDiv.className = `alert alert-${type} alert-dismissible fade show`;
+
+    // Добавляем кнопку закрытия если это не успех
+    if (type !== 'success' && !messageDiv.querySelector('.btn-close')) {
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'btn-close';
+        closeBtn.setAttribute('data-bs-dismiss', 'alert');
+        closeBtn.setAttribute('aria-label', 'Закрыть');
+        messageDiv.appendChild(closeBtn);
+    }
+}
+</script>
+{% endif %}
+{% endblock %}

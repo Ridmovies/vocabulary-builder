@@ -34,6 +34,39 @@ async def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
+@router.get("/logout", response_class=HTMLResponse)
+async def logout_page(
+    request: Request,
+    user: UserDepOptional,
+):
+    """
+    Страница выхода из системы
+    """
+    return templates.TemplateResponse(
+        "logout.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )
+
+
+@router.get("/register", response_class=HTMLResponse)
+async def register_page(
+    request: Request,
+    user: UserDepOptional,
+):
+    """
+    Страница регистрации нового пользователя
+    """
+    return templates.TemplateResponse(
+        "register.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )
+
 @router.get("/create-word", response_class=HTMLResponse)
 async def create_word_page(
         request: Request,
