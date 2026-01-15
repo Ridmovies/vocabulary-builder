@@ -109,3 +109,20 @@ async def typing_exercise_page(
         "typing_exercise.html",
         {"request": request, "user": user}
     )
+
+
+@router.get("/categories", response_class=HTMLResponse)
+async def categories_page(
+    request: Request,
+    user: UserDep,
+):
+    """
+    Страница управления категориями
+    """
+    return templates.TemplateResponse(
+        "categories.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )
