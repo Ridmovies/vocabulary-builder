@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from starlette.responses import FileResponse
 
 from app.api.deps import UserDep, UserDepOptional
 
@@ -21,6 +22,12 @@ async def index(
     )
 
 
+
+@router.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse("static/favicon.ico")
+
+
 @router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     """ТОЛЬКО отображение страницы."""
@@ -29,19 +36,19 @@ async def login_page(request: Request):
 
 @router.get("/create-word", response_class=HTMLResponse)
 async def create_word_page(
-    request: Request,
-    current_user: UserDep,  # если страница защищена
+        request: Request,
+        user: UserDep,  # Меняем current_user на user
 ):
     """Страница создания слова."""
     return templates.TemplateResponse(
         "create_word.html",
-        {"request": request, "current_user": current_user}
+        {"request": request, "user": user}
     )
 
 @router.get("/my-words", response_class=HTMLResponse)
 async def words_page(
     request: Request,
-    current_user: UserDep,
+    user: UserDep,
     category_ids: list[int] | None = Query(
         None, description="Фильтр по категориям"
     )
@@ -51,18 +58,21 @@ async def words_page(
         "words.html",
         {
             "request": request,
-            "current_user": current_user,
+            "user": user,
             "initial_category_ids": category_ids or []
         }
     )
 
 
 @router.get("/typing-exercise", response_class=HTMLResponse)
-async def typing_exercise_page(request: Request):
+async def typing_exercise_page(
+        request: Request,
+        user: UserDep,
+):
     """
     Страница с упражнениями на набор текста
     """
     return templates.TemplateResponse(
         "typing_exercise.html",
-        {"request": request}
+        {"request": request, "user": user}
     )

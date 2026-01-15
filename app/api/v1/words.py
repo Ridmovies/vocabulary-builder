@@ -5,6 +5,7 @@ from starlette import status
 
 from app.api.deps import DBSession, UserDep
 from app.crud.crud_words import word_crud
+from app.schemas.typing import TypingCheckRequest
 from app.schemas.words import WordCreate, WordRead, WordUpdate
 from app.services.favorites import FavoriteService
 from app.services.typing import TypingService
@@ -113,13 +114,12 @@ async def get_random_word(
 async def check_answer(
         session: DBSession,
         current_user: UserDep,
-        word_id: int,
-        answer: str,
+        request: TypingCheckRequest  # Получаем из body
 ):
     return await TypingService.check_answer(
         session=session,
-        word_id=word_id,
-        answer=answer,
+        word_id=request.word_id,
+        answer=request.answer,
     )
 
 @router.get("/favorites", response_model=list[WordRead])
@@ -131,7 +131,6 @@ async def get_favorites(
         session=session,
         user_id=current_user.id,
     )
-
 
 
 @router.get("/{word_id}", response_model=WordRead)

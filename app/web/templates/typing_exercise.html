@@ -109,7 +109,7 @@
     async function loadCategories() {
         try {
             // Загружаем список категорий пользователя
-            const response = await fetch('/api/categories?scope=mine');
+            const response = await fetch('/api/categories?scope=all');
 
             if (!response.ok) {
                 throw new Error('Ошибка загрузки категорий');
@@ -144,7 +144,7 @@
 
     async function loadRandomWord() {
         try {
-            let url = '/api/typing/random?';
+            let url = '/api/words/random?';
 
             if (selectedCategoryId) {
                 url += `category_ids=${selectedCategoryId}&`;
@@ -212,7 +212,7 @@
         }
 
         try {
-            const response = await fetch('/api/typing/check', {
+            const response = await fetch('/api/words/check', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({word_id: currentWordId, answer})
