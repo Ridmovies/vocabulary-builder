@@ -425,6 +425,9 @@ function renderWords(words) {
               ).join('')
             : '<span class="badge bg-light text-muted">Без категории</span>';
 
+        // Проверяем, есть ли слово в избранном
+        // Если API не возвращает is_favorite, можно сделать дополнительный запрос
+        // или отслеживать локально. Покажем кнопку в любом случае.
         const favoriteIcon = word.is_favorite
             ? '<i class="bi bi-star-fill text-warning"></i>'
             : '<i class="bi bi-star"></i>';
@@ -437,7 +440,8 @@ function renderWords(words) {
                 <div class="col-md-4">
                     <div class="d-flex align-items-center">
                         <button class="btn btn-sm btn-link text-warning p-0 me-2"
-                                onclick="toggleFavorite(${word.id}, ${!word.is_favorite})">
+                                onclick="toggleFavorite(${word.id})"
+                                id="favoriteBtn-${word.id}">
                             ${favoriteIcon}
                         </button>
                         <div>
@@ -567,13 +571,14 @@ function changePage(newPage) {
 // Переключение избранного
 async function toggleFavorite(wordId, isFavorite) {
     try {
-        const response = await fetch(`/api/words/${wordId}`, {
-            method: 'PATCH',
+        const url = `/api/words/favorites/${wordId}`;
+        const method = isFavorite ? 'POST' : 'DELETE';
+
+        const response = await fetch(url, {
+            method: method,
             headers: {
-                'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ is_favorite: isFavorite }),
             credentials: 'include'
         });
 

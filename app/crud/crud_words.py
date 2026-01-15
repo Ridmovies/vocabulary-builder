@@ -66,39 +66,6 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
         result = await db.execute(query)
         return result.scalars().all()
 
-    # async def create_with_categories(
-    #         self,
-    #         db: AsyncSession,
-    #         *,
-    #         obj_in: WordCreate,
-    #         owner_id: int | None,  # системное слово = None
-    # ) -> Word:
-    #
-    #     # 1. Создаём слово
-    #     word_data = obj_in.model_dump(exclude={"category_ids"})
-    #     word = Word(
-    #         **word_data,
-    #         owner_id=owner_id,
-    #     )
-    #
-    #     # 2. Если есть категории — подгружаем и связываем
-    #     if obj_in.category_ids:
-    #         result = await db.execute(
-    #             select(Category).where(Category.id.in_(obj_in.category_ids))
-    #         )
-    #         categories = result.scalars().all()
-    #
-    #         if len(categories) != len(set(obj_in.category_ids)):
-    #             raise ValueError("One or more categories not found")
-    #
-    #         word.categories.extend(categories)
-    #
-    #     # 3. Один add + один commit
-    #     db.add(word)
-    #     await db.commit()
-    #     await db.refresh(word)
-    #
-    #     return word
 
     async def create_with_categories(
             self,

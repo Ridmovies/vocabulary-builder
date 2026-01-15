@@ -30,6 +30,10 @@ async def get_words(
     category_ids: list[int] | None = Query(
         None, description="Фильтр по категориям, список ID"
     ),
+    is_favorite: bool = Query(
+        False,
+        description="Только избранные слова"
+    ),
 ):
     """
     Получить слова с пагинацией и фильтром по категориям.
@@ -39,6 +43,7 @@ async def get_words(
         user_id=current_user.id,
         skip=skip,
         limit=limit,
+        is_favorite=is_favorite,
         category_ids=category_ids,
     )
 
