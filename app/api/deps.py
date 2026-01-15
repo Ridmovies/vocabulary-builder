@@ -119,3 +119,38 @@ async def get_current_user(
 
 # Аннотированный тип для зависимостей, представляющий текущего пользователя
 UserDep: type[User] = Annotated[User, Depends(get_current_user)]
+
+
+async def get_optional_user(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+) -> Optional[User]:
+    """
+    Вернуть пользователя, если он залогинен.
+    Иначе — None.
+    НИКОГДА не бросает 401.
+    """
+    try:
+        access_token = get_token_from_cookie(request, "access")
+        if not access_token:
+            return None
+
+        payload = decode_jwt_token(access_token)
+        if not payload or payload.get("type") != "access":
+            return None
+
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+
+        user = await user_crud.get(db, id=int(user_id))
+        if not user or not user.is_active:
+            return None
+
+        return user
+
+    except Exception:
+        return None
+
+# UserDepOptional: type[User] = Annotated[Optional[User], Depends(get_optional_user)]
+UserDepOptional = Annotated[Optional[User], Depends(get_optional_user)]

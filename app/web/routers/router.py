@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 
-from app.api.deps import UserDep
+from app.api.deps import UserDep, UserDepOptional
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/web/templates")
@@ -10,7 +10,7 @@ templates = Jinja2Templates(directory="app/web/templates")
 @router.get("/", response_class=HTMLResponse)
 async def index(
         request: Request,
-        user: UserDep,
+        user: UserDepOptional,
 ):
     return templates.TemplateResponse(
         "index.html",
