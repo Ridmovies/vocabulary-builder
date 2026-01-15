@@ -1,19 +1,11 @@
-from starlette import status
-from starlette.responses import Response
-
-from app.core.security import create_access_token, create_refresh_token, create_csrf_token, set_auth_cookies
-from app.crud.crud_user import user_crud
-from app.crud.crud_words import word_crud
-from app.schemas.words import WordCreate
-
-from fastapi import APIRouter, Request, Form, Query
+from fastapi import APIRouter, Request, Query
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 
-from app.api.deps import DBSession, UserDep
+from app.api.deps import UserDep
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="app/web/templates")
 
 @router.get("/", response_class=HTMLResponse)
 async def index(

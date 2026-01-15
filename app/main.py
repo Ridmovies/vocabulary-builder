@@ -13,7 +13,7 @@ from app.api.v1.typing import router as typing_router
 from app.api.v1.dev import router as dev_router
 from app.core.seed import seed
 
-from app.routers.typing import router as web_typing_router
+from app.web.routers.router import router as web_typing_router
 
 
 @asynccontextmanager
@@ -40,6 +40,6 @@ app.include_router(router=auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(router=dev_router, prefix="/api/dev", tags=["dev"])
 app.include_router(router=words_router, prefix="/api/words", tags=["words"])
 app.include_router(router=category_router, prefix="/api/categories", tags=["categories"])
-app.include_router(router=typing_router, prefix="/api/typing", tags=["typing"])
+app.include_router(router=typing_router, prefix="/api/web", tags=["web"])
 
 app.include_router(router=web_typing_router)
