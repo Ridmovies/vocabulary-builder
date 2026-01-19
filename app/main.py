@@ -11,7 +11,7 @@ from app.api.v1.words import router as words_router
 from app.api.v1.category import router as category_router
 from app.api.v1.typing import router as typing_router
 from app.api.v1.dev import router as dev_router
-from app.core.seed import seed
+from app.core.seed import seed, seed_users
 
 from app.web.routers.router import router as web_typing_router
 
@@ -21,6 +21,7 @@ async def lifespan(app: FastAPI):
     # Startup logic.
     print("🚀 Starting application...")
     await seed()
+    await seed_users()
     yield
 
 

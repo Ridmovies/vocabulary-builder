@@ -2,8 +2,17 @@ import asyncio
 from sqlalchemy import select
 
 from app.core.database import AsyncSessionLocal
+from app.models import User
 from app.models.word import Word
 from app.models.category import Category
+from app.utils.pwd import get_password_hash
+
+USERS = [
+    {"email": "user@example.com", "username": "user", "password": "string", "is_superuser": False},
+    {"email": "alice@example.com", "username": "alice", "password": "password123", "is_superuser": False},
+    {"email": "bob@example.com", "username": "bob", "password": "password123", "is_superuser": False},
+    {"email": "charlie@example.com", "username": "charlie", "password": "password123", "is_superuser": False},
+]
 
 # --- Данные для сида ---
 CATEGORIES = [
@@ -93,5 +102,32 @@ async def seed():
         await session.commit()
     print("Seed completed!")
 
+
+async def seed_users():
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            # Получаем всех существующих пользователей
+            existing_users = await session.execute(select(User))
+            existing_users = {u.email: u for u in existing_users.scalars().all()}
+
+            for u in USERS:
+                if u["email"] not in existing_users:
+                    hashed_password = get_password_hash(u["password"])
+                    user_obj = User(
+                        email=u["email"],
+                        username=u["username"],
+                        hashed_password=hashed_password,
+                        is_superuser=u["is_superuser"],
+                        is_active=True,
+                        is_verified=True,  # можно выставить True для сида
+                    )
+                    session.add(user_obj)
+
+        await session.commit()
+    print("User seed completed!")
+
+
+
 if __name__ == "__main__":
     asyncio.run(seed())
+    asyncio.run(seed_users())
