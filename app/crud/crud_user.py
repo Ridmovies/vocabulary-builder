@@ -43,7 +43,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserCreate]):
         )
 
         db.add(db_obj)
-        await db.commit()
+        await db.flush()  # 👈 обязательно
         await db.refresh(db_obj)
 
         return db_obj
