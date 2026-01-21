@@ -1,0 +1,12 @@
+{
+  "category": {
+    "name": "default",
+    "description": "Системная категория по умолчанию",
+    "owner_id": null
+  },
+  "words": [
+    {"english": "entire", "russian": "целый, весь"},
+    {"english": "concerned", "russian": "обеспокоенный"},
+    {"english": "anxious", "russian": "тревожный"}
+  ]
+}

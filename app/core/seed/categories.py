@@ -12,7 +12,7 @@ async def seed_categories():
         async with session.begin():
             for c in CATEGORIES:
                 result = await session.execute(
-                    select(Category).where(Category.name == c["name"])
+                    select(Category).where(Category.name == c["name"], Category.owner_id == None)
                 )
                 if result.scalar_one_or_none():
                     continue

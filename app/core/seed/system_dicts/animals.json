@@ -1,0 +1,12 @@
+{
+  "category": {
+    "name": "Animals",
+    "description": "Животные",
+    "owner_id": null
+  },
+  "words": [
+    {"english": "cat", "russian": "кот"},
+    {"english": "dog", "russian": "собака"},
+    {"english": "horse", "russian": "лошадь"}
+  ]
+}
