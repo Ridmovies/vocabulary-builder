@@ -21,7 +21,7 @@ CATEGORIES = [
     {"name": "Animals", "description": "Животные"},
     {"name": "difficult", "description": "Сложные слова"},
     {"name": "phrasal verbs", "description": "Фразовый глагол"},
-
+    {"name": "default", "description": "Категория по умолчанию"},
 ]
 
 WORDS = [
@@ -44,63 +44,89 @@ WORDS = [
     {"english": "tree", "russian": "дерево", "categories": ["Basic"]},
     {"english": "book", "russian": "книга", "categories": ["Basic"]},
     {"english": "chair", "russian": "стул", "categories": ["Basic"]},
-    {"english": "bread", "russian": "хлеб", "categories": ["Food"]}, # дубликат для примера
-
     {"english": "arrangement", "russian": "договоренность", "categories": ["difficult"]},
-
     {"english": "take off", "russian": "снимать (одежду), взлетать", "categories": ["phrasal verbs"]},
     {"english": "turn on", "russian": "включать", "categories": ["phrasal verbs"]},
     {"english": "turn off", "russian": "выключать", "categories": ["phrasal verbs"]},
     {"english": "get up", "russian": "вставать", "categories": ["phrasal verbs"]},
     {"english": "go on", "russian": "продолжать", "categories": ["phrasal verbs"]},
     {"english": "come back", "russian": "возвращаться", "categories": ["phrasal verbs"]},
-    {"english": "find out", "russian": "узнавать, выяснять", "categories": ["phrasal verbs"]},
-    {"english": "give up", "russian": "сдаваться, бросать", "categories": ["phrasal verbs"]},
-    {"english": "look for", "russian": "искать", "categories": ["phrasal verbs"]},
-    {"english": "look after", "russian": "присматривать, заботиться", "categories": ["phrasal verbs"]},
-    {"english": "run out", "russian": "заканчиваться", "categories": ["phrasal verbs"]},
-    {"english": "set up", "russian": "настраивать, организовывать", "categories": ["phrasal verbs"]},
-    {"english": "pick up", "russian": "подбирать, забирать", "categories": ["phrasal verbs"]},
-    {"english": "put on", "russian": "надевать", "categories": ["phrasal verbs"]},
-    {"english": "put off", "russian": "откладывать", "categories": ["phrasal verbs"]},
-    {"english": "bring up", "russian": "поднимать тему, воспитывать", "categories": ["phrasal verbs"]},
-    {"english": "break down", "russian": "ломаться", "categories": ["phrasal verbs"]},
-    {"english": "carry on", "russian": "продолжать", "categories": ["phrasal verbs"]},
-    {"english": "come across", "russian": "случайно встретить", "categories": ["phrasal verbs"]},
-    {"english": "wake up", "russian": "просыпаться", "categories": ["phrasal verbs"]},
 ]
+
+USER_DEFAULT_WORDS = [
+    {"english": "entire", "russian": "целый, весь"},
+    {"english": "concerned", "russian": "обеспокоенный"},
+    {"english": "anxious", "russian": "тревожный"},
+    {"english": "coincidence", "russian": "совпадение"},
+    {"english": "fate", "russian": "судьба"},
+    {"english": "despite", "russian": "несмотря на"},
+    {"english": "get out", "russian": "выходить, убираться"},
+    {"english": "intend", "russian": "намереваться"},
+    {"english": "severe", "russian": "серьёзный, суровый"},
+    {"english": "damp", "russian": "сырой, влажный"},
+    {"english": "suffer", "russian": "страдать"},
+    {"english": "significant", "russian": "значительный"},
+    {"english": "eventually", "russian": "в конечном итоге"},
+    {"english": "on purpose", "russian": "намеренно"},
+    {"english": "frustration", "russian": "разочарование"},
+]
+
+# Добавляем USER_DEFAULT_WORDS в WORDS с категорией default
+WORDS.extend(
+    {
+        "english": w["english"],
+        "russian": w["russian"],
+        "categories": ["default"],
+    }
+    for w in USER_DEFAULT_WORDS
+)
+
 
 async def seed():
     async with AsyncSessionLocal() as session:
         async with session.begin():
-            # --- Сначала категории ---
-            existing_cats = await session.execute(select(Category))
-            existing_cats = {c.name: c for c in existing_cats.scalars().all()}
 
+            # --- Создаём категории ---
+            existing_cats = {}
             for cat in CATEGORIES:
-                if cat["name"] not in existing_cats:
+                result = await session.execute(
+                    select(Category).where(Category.name == cat["name"])
+                )
+                existing_cat = result.scalar_one_or_none()
+                if existing_cat:
+                    existing_cats[cat["name"]] = existing_cat
+                else:
                     new_cat = Category(name=cat["name"], description=cat["description"])
                     session.add(new_cat)
+                    await session.flush()  # id появится сразу
                     existing_cats[cat["name"]] = new_cat
 
-            await session.flush()  # чтобы были id категорий
-
-            # --- Теперь слова ---
-            existing_words = await session.execute(select(Word))
-            existing_words = {w.english: w for w in existing_words.scalars().all()}
+            # --- Создаём слова ---
+            existing_words = {}
+            result = await session.execute(select(Word))
+            for w in result.scalars().all():
+                existing_words[w.english] = w
 
             for w in WORDS:
-                if w["english"] not in existing_words:
-                    word_obj = Word(
+                word = existing_words.get(w["english"])
+                if not word:
+                    word = Word(
                         english=w["english"],
-                        russian=w["russian"]
+                        russian=w["russian"],
+                        categories=[],  # пустой список сразу
                     )
-                    # Связь с категориями
-                    word_obj.categories = [existing_cats[c] for c in w["categories"] if c in existing_cats]
-                    session.add(word_obj)
+                    session.add(word)
+                    await session.flush()
+                    existing_words[w["english"]] = word
+
+                # Добавляем категории
+                for cat_name in w["categories"]:
+                    if cat_name in existing_cats and existing_cats[cat_name] not in word.categories:
+                        word.categories.append(existing_cats[cat_name])
 
         await session.commit()
     print("Seed completed!")
+
 
 
 async def seed_users():
@@ -125,7 +151,6 @@ async def seed_users():
 
         await session.commit()
     print("User seed completed!")
-
 
 
 if __name__ == "__main__":
