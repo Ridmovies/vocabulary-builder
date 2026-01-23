@@ -126,3 +126,40 @@ async def categories_page(
             "user": user
         }
     )
+
+
+# @router.get("/grammar/{slug}", response_class=HTMLResponse)
+# async def grammar_lesson_page(
+#     request: Request,
+#     user: UserDep,
+# ):
+#     """
+#     Страница урока грамматики
+#     Просто отображает шаблон, данные загружаются через API на фронте
+#     """
+#     return templates.TemplateResponse(
+#         "grammar_lesson.html",
+#         {
+#             "request": request,
+#             "user": user,
+#             # lesson не передаем, он загружается через API на фронте
+#         }
+#     )
+
+@router.get("/grammar/{slug}", response_class=HTMLResponse)
+async def grammar_topic_page(
+    request: Request,
+    user: UserDep,
+    slug: str
+):
+    """
+    Страница темы грамматики (Markdown версия)
+    """
+    return templates.TemplateResponse(
+        "grammar_topic.html",
+        {
+            "request": request,
+            "user": user,
+            "slug": slug  # Передаем slug для загрузки данных на фронте
+        }
+    )

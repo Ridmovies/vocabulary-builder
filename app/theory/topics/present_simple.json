@@ -1,0 +1,203 @@
+{
+  "id": 1,
+  "slug": "present-simple",
+  "title": "Present Simple",
+  "description": "Как говорить о привычках, фактах и регулярных действиях",
+  "estimated_time_minutes": 6,
+  "blocks": [
+    {
+      "id": 101,
+      "type": "card",
+      "order": 1,
+      "content": {
+        "title": "Present Simple — настоящее обычное",
+        "text": "Мы используем Present Simple, когда говорим о привычках, фактах и том, что происходит регулярно.",
+        "examples": [
+          "I work every day.",
+          "The sun rises in the east."
+        ]
+      }
+    },
+
+    {
+      "id": 102,
+      "type": "card",
+      "order": 2,
+      "content": {
+        "title": "Когда используется Present Simple",
+        "items": [
+          {
+            "icon": "clock",
+            "title": "Привычки",
+            "example": "I drink coffee in the morning."
+          },
+          {
+            "icon": "globe",
+            "title": "Факты",
+            "example": "Water boils at 100°C."
+          },
+          {
+            "icon": "calendar",
+            "title": "Расписания",
+            "example": "The train leaves at 7 a.m."
+          }
+        ]
+      }
+    },
+
+    {
+      "id": 103,
+      "type": "quiz",
+      "order": 3,
+      "content": {
+        "question": "Где здесь нужен Present Simple?",
+        "items": [
+          {
+            "sentence": "I ___ coffee every morning",
+            "options": ["drink", "am drinking"],
+            "correct": "drink",
+            "explanation": "Фраза every morning говорит о регулярности."
+          },
+          {
+            "sentence": "I ___ coffee right now",
+            "options": ["drink", "am drinking"],
+            "correct": "am drinking",
+            "explanation": "Right now — это момент речи."
+          }
+        ]
+      }
+    },
+
+    {
+      "id": 104,
+      "type": "card",
+      "order": 4,
+      "content": {
+        "title": "Формула Present Simple",
+        "formula": [
+          "I / You / We / They + verb",
+          "He / She / It + verb + s"
+        ],
+        "examples": [
+          "I work",
+          "You like pizza",
+          "He works",
+          "She likes pizza"
+        ],
+        "note": "Буква -s добавляется только для he / she / it"
+      }
+    },
+
+    {
+      "id": 105,
+      "type": "trap",
+      "order": 5,
+      "content": {
+        "title": "Типичная ошибка",
+        "sentence": "He work in an office.",
+        "question": "Что здесь неправильно?",
+        "options": ["work", "in", "an office"],
+        "correct": "work",
+        "explanation": "Для he / she / it глагол всегда с окончанием -s."
+      }
+    },
+
+    {
+      "id": 106,
+      "type": "quiz",
+      "order": 6,
+      "content": {
+        "items": [
+          {
+            "sentence": "She ___ coffee every morning",
+            "options": ["drink", "drinks"],
+            "correct": "drinks"
+          },
+          {
+            "sentence": "They ___ football on Sundays",
+            "options": ["plays", "play"],
+            "correct": "play"
+          },
+          {
+            "sentence": "He ___ in Amsterdam",
+            "options": ["live", "lives"],
+            "correct": "lives"
+          }
+        ]
+      }
+    },
+
+    {
+      "id": 107,
+      "type": "dialog",
+      "order": 7,
+      "content": {
+        "steps": [
+          {
+            "role": "app",
+            "text": "Hi! What do you do?"
+          },
+          {
+            "role": "user_input",
+            "placeholder": "I work as a ...",
+            "expected_keywords": ["work"]
+          },
+          {
+            "role": "app",
+            "text": "Nice! And what does Anna do?"
+          },
+          {
+            "role": "user_input",
+            "placeholder": "She works as a ...",
+            "expected_keywords": ["works"]
+          },
+          {
+            "role": "app",
+            "text": "Exactly! That’s why we use -s with he/she/it."
+          }
+        ]
+      }
+    },
+
+    {
+      "id": 108,
+      "type": "card",
+      "order": 8,
+      "content": {
+        "title": "Отрицания и вопросы",
+        "negatives": [
+          "I don't work on Sundays.",
+          "He doesn't work on Sundays."
+        ],
+        "questions": [
+          "Do you work here?",
+          "Does he work here?"
+        ],
+        "warning": "После doesn't глагол используется без -s."
+      }
+    },
+
+    {
+      "id": 109,
+      "type": "final_quiz",
+      "order": 9,
+      "content": {
+        "items": [
+          {
+            "sentence": "He ___ coffee",
+            "correct": "drinks"
+          },
+          {
+            "sentence": "She doesn't ___ meat",
+            "correct": "eat"
+          },
+          {
+            "sentence": "___ you work on weekends?",
+            "correct": "Do"
+          }
+        ],
+        "success_message": "Отлично! Ты освоил Present Simple 🎉"
+      }
+    }
+  ]
+}

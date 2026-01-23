@@ -7,6 +7,7 @@ from starlette.templating import Jinja2Templates
 
 from app.api.v1.user import router as user_router
 from app.api.v1.auth import router as auth_router
+from app.api.v1.theory import router as theory_router
 from app.api.v1.words import router as words_router
 from app.api.v1.category import router as category_router
 from app.api.v1.typing import router as typing_router
@@ -37,6 +38,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(router=user_router, prefix="/api/users", tags=["users"])
 app.include_router(router=auth_router, prefix="/api/auth", tags=["auth"])
+app.include_router(router=theory_router, prefix="/api/grammar", tags=["grammar"])
 app.include_router(router=dev_router, prefix="/api/dev", tags=["dev"])
 app.include_router(router=words_router, prefix="/api/words", tags=["words"])
 app.include_router(router=category_router, prefix="/api/categories", tags=["categories"])

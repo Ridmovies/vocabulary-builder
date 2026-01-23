@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
 
     # Access токен
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 15 минут для безопасности
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60000  # 15 минут для безопасности
     ACCESS_TOKEN_COOKIE_NAME: str = "access"
     ACCESS_TOKEN_COOKIE_PATH: str = "/"
     ACCESS_TOKEN_COOKIE_DOMAIN: str | None = None
