@@ -3,5 +3,35 @@
     "slug": "present-simple",
     "title": "Present Simple",
     "description": "Как говорить о привычках и фактах"
+  },
+  {
+    "slug": "past-simple",
+    "title": "Past Simple",
+    "description": "Как говорить о действиях в прошлом"
+  },
+  {
+  "slug": "am-is-are",
+  "title": "Am / Is / Are",
+  "description": "Глагол to be в настоящем времени"
+  },
+  {
+    "slug": "there-is-there-are",
+    "title": "There is / There are",
+    "description": "Как говорить о существовании и наличии"
+  },
+  {
+    "slug": "have-has",
+    "title": "Have / Has",
+    "description": "Как сказать, что у кого-то что-то есть"
+  },
+  {
+    "slug": "articles",
+    "title": "Articles (a / an / the)",
+    "description": "Артикли в английском языке"
+  },
+  {
+  "slug": "was-were",
+  "title": "Was / Were",
+  "description": "Прошедшая форма глагола to be"
   }
 ]

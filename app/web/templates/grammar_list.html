@@ -1,0 +1,824 @@
+<!-- templates/grammar_list.html -->
+{% extends "base.html" %}
+
+{% block title %}Грамматика - English Learning{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Заголовок и описание -->
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold mb-3">Грамматика английского языка</h1>
+        <p class="lead text-muted mb-4">
+            Изучайте грамматические темы от простого к сложному.
+            Каждая тема содержит объяснения, примеры и практические упражнения.
+        </p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <span class="badge bg-primary">
+                <i class="bi bi-book me-1"></i>
+                <span id="topicsCount">0</span> тем
+            </span>
+            <span class="badge bg-success">
+                <i class="bi bi-clock me-1"></i>
+                Обучение в удобном темпе
+            </span>
+            <span class="badge bg-info">
+                <i class="bi bi-check-circle me-1"></i>
+                Практические упражнения
+            </span>
+        </div>
+    </div>
+
+    <!-- Поиск и фильтры -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-light border-end-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text"
+                               class="form-control border-start-0"
+                               id="searchInput"
+                               placeholder="Поиск тем...">
+                        <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select form-select-lg" id="sortSelect">
+                        <option value="alphabet">По алфавиту (А-Я)</option>
+                        <option value="alphabet_desc">По алфавиту (Я-А)</option>
+                        <option value="difficulty">По сложности</option>
+                        <option value="popular">По популярности</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Состояние загрузки -->
+    <div id="loadingState" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка тем...</span>
+        </div>
+        <p class="mt-3 text-muted">Загрузка списка тем...</p>
+    </div>
+
+    <!-- Состояние ошибки -->
+    <div id="errorState" class="text-center py-5" style="display: none;">
+        <i class="bi bi-exclamation-triangle display-1 text-danger mb-3"></i>
+        <h3 class="mb-3">Не удалось загрузить темы</h3>
+        <p class="text-muted mb-4" id="errorMessage"></p>
+        <button class="btn btn-primary" onclick="loadTopics()">
+            <i class="bi bi-arrow-clockwise me-2"></i>
+            Попробовать снова
+        </button>
+    </div>
+
+    <!-- Пустой результат поиска -->
+    <div id="emptyResults" class="text-center py-5" style="display: none;">
+        <i class="bi bi-search display-1 text-muted mb-3"></i>
+        <h3 class="mb-3">Темы не найдены</h3>
+        <p class="text-muted mb-4">Попробуйте изменить поисковый запрос</p>
+        <button class="btn btn-outline-secondary" id="resetSearchBtn">
+            <i class="bi bi-arrow-clockwise me-2"></i>
+            Сбросить поиск
+        </button>
+    </div>
+
+    <!-- Список тем -->
+    <div id="topicsContainer" class="row g-4" style="display: none;"></div>
+
+    <!-- Статистика прогресса (только для авторизованных) -->
+    {% if user %}
+    <div class="card mt-4 border-0 shadow-sm" id="progressSection" style="display: none;">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-graph-up me-2"></i>
+                Ваш прогресс
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h6 class="mb-2">Изучено тем: <span id="completedCount">0</span> из <span id="totalCount">0</span></h6>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-success" id="progressBar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-outline-primary" id="viewCompletedBtn">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Показать изученные
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Категории тем (группировка) -->
+    <div class="card mt-4 border-0 shadow-sm" id="categoriesSection" style="display: none;">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-tags me-2"></i>
+                Категории тем
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2" id="categoriesList">
+                <!-- Категории будут загружены динамически -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Призыв к действию -->
+    <div class="text-center mt-5 pt-5 border-top">
+        <h3 class="mb-3">Начните изучение сейчас!</h3>
+        <p class="text-muted mb-4">Выберите тему, которая вас интересует, или начните с первой</p>
+        <button class="btn btn-primary btn-lg" id="startLearningBtn">
+            <i class="bi bi-play-circle me-2"></i>
+            Начать обучение
+        </button>
+    </div>
+</div>
+
+<!-- Модальное окно с подсказкой -->
+<div class="modal fade" id="tipModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <i class="bi bi-lightbulb me-2 text-warning"></i>
+                    Совет по изучению
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="tipContent"></p>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="dontShowAgain">
+                    <label class="form-check-label" for="dontShowAgain">
+                        Больше не показывать подсказки
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Понятно</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Глобальные переменные
+let allTopics = [];
+let filteredTopics = [];
+let userProgress = {};
+let categories = {};
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', async function() {
+    // Загружаем темы
+    await loadTopics();
+
+    // Настройка обработчиков
+    setupEventListeners();
+
+    // Показываем подсказку для новых пользователей
+    showWelcomeTip();
+});
+
+// Загрузка тем из API
+async function loadTopics() {
+    try {
+        // Показываем состояние загрузки
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('errorState').style.display = 'none';
+        document.getElementById('topicsContainer').style.display = 'none';
+
+        const response = await fetch('/api/grammar/topics', {
+            headers: { 'Accept': 'application/json' },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка загрузки тем');
+        }
+
+        allTopics = await response.json();
+
+        // Сортируем по алфавиту по умолчанию
+        allTopics.sort((a, b) => a.title.localeCompare(b.title));
+
+        // Обновляем счетчик
+        document.getElementById('topicsCount').textContent = allTopics.length;
+
+        // Отображаем темы
+        displayTopics(allTopics);
+
+        // Загружаем прогресс пользователя (если авторизован)
+        {% if user %}
+        await loadUserProgress();
+        {% endif %}
+
+        // Определяем категории
+        determineCategories();
+
+        // Скрываем состояние загрузки, показываем контент
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('topicsContainer').style.display = 'flex';
+
+        // Показываем дополнительные секции
+        document.getElementById('categoriesSection').style.display = 'block';
+        {% if user %}
+        document.getElementById('progressSection').style.display = 'block';
+        {% endif %}
+
+    } catch (error) {
+        console.error('Ошибка загрузки тем:', error);
+
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+        document.getElementById('errorMessage').textContent =
+            'Не удалось загрузить список тем. Пожалуйста, проверьте подключение к интернету.';
+    }
+}
+
+// Отображение тем
+function displayTopics(topics) {
+    const container = document.getElementById('topicsContainer');
+
+    if (topics.length === 0) {
+        container.style.display = 'none';
+        document.getElementById('emptyResults').style.display = 'block';
+        return;
+    }
+
+    document.getElementById('emptyResults').style.display = 'none';
+    container.style.display = 'flex';
+
+    let html = '';
+
+    topics.forEach((topic, index) => {
+        const isCompleted = userProgress[topic.slug] || false;
+        const difficulty = getDifficultyLevel(topic);
+        const difficultyClass = getDifficultyClass(difficulty);
+
+        html += `
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm topic-card"
+                 data-slug="${topic.slug}"
+                 data-title="${topic.title.toLowerCase()}"
+                 data-difficulty="${difficulty}">
+                <div class="card-body">
+                    <!-- Заголовок темы -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                ${isCompleted ? '<i class="bi bi-check-circle text-success me-2"></i>' : ''}
+                                ${topic.title}
+                            </h5>
+                            <span class="badge ${difficultyClass}">${difficulty}</span>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="/grammar/${topic.slug}">
+                                        <i class="bi bi-book me-2"></i>
+                                        Изучить
+                                    </a>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item" onclick="toggleFavorite('${topic.slug}', this)">
+                                        <i class="bi bi-star me-2"></i>
+                                        В избранное
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button class="dropdown-item text-danger" onclick="markAsCompleted('${topic.slug}', ${!isCompleted})">
+                                        <i class="bi ${isCompleted ? 'bi-x-circle' : 'bi-check-circle'} me-2"></i>
+                                        ${isCompleted ? 'Снять отметку' : 'Отметить изученным'}
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Описание темы -->
+                    <p class="card-text text-muted mb-3">
+                        ${topic.description || 'Описание отсутствует'}
+                    </p>
+
+                    <!-- Статус и действия -->
+                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                        <div>
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>
+                                ${getEstimatedTime(topic)} мин
+                            </small>
+                        </div>
+                        <div>
+                            <a href="/grammar/${topic.slug}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-arrow-right me-1"></i>
+                                Изучить
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Прогресс (для авторизованных) -->
+                    {% if user %}
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar bg-success" role="progressbar"
+                             style="width: ${isCompleted ? '100' : '0'}%"></div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+// Определение уровня сложности темы
+function getDifficultyLevel(topic) {
+    const difficultyKeywords = {
+        'basic': ['present', 'simple', 'basic', 'начальный', 'основы'],
+        'intermediate': ['past', 'future', 'continuous', 'perfect', 'средний'],
+        'advanced': ['conditional', 'passive', 'reported', 'advanced', 'продвинутый']
+    };
+
+    const title = topic.title.toLowerCase();
+    const description = (topic.description || '').toLowerCase();
+
+    for (const [level, keywords] of Object.entries(difficultyKeywords)) {
+        for (const keyword of keywords) {
+            if (title.includes(keyword) || description.includes(keyword)) {
+                return getDifficultyLabel(level);
+            }
+        }
+    }
+
+    return 'Начальный';
+}
+
+function getDifficultyLabel(level) {
+    const labels = {
+        'basic': 'Начальный',
+        'intermediate': 'Средний',
+        'advanced': 'Продвинутый'
+    };
+    return labels[level] || 'Начальный';
+}
+
+function getDifficultyClass(difficulty) {
+    const classes = {
+        'Начальный': 'bg-success',
+        'Средний': 'bg-warning',
+        'Продвинутый': 'bg-danger'
+    };
+    return classes[difficulty] || 'bg-secondary';
+}
+
+// Оценка времени изучения
+function getEstimatedTime(topic) {
+    // Простая эвристика: основываясь на названии и описании
+    const title = topic.title.toLowerCase();
+    const description = (topic.description || '').toLowerCase();
+
+    if (title.includes('simple') || description.includes('простой')) {
+        return 15;
+    } else if (title.includes('continuous') || title.includes('perfect')) {
+        return 30;
+    } else if (title.includes('advanced') || description.includes('сложный')) {
+        return 45;
+    }
+
+    return 20; // среднее время по умолчанию
+}
+
+// Определение категорий тем
+function determineCategories() {
+    categories = {
+        'Времена': [],
+        'Модальные глаголы': [],
+        'Условные предложения': [],
+        'Пассивный залог': [],
+        'Косвенная речь': [],
+        'Другое': []
+    };
+
+    allTopics.forEach(topic => {
+        const title = topic.title.toLowerCase();
+
+        if (title.includes('present') || title.includes('past') ||
+            title.includes('future') || title.includes('simple') ||
+            title.includes('continuous') || title.includes('perfect')) {
+            categories['Времена'].push(topic.slug);
+        } else if (title.includes('modal') || title.includes('модальный')) {
+            categories['Модальные глаголы'].push(topic.slug);
+        } else if (title.includes('conditional') || title.includes('условный')) {
+            categories['Условные предложения'].push(topic.slug);
+        } else if (title.includes('passive') || title.includes('пассивный')) {
+            categories['Пассивный залог'].push(topic.slug);
+        } else if (title.includes('reported') || title.includes('косвенная')) {
+            categories['Косвенная речь'].push(topic.slug);
+        } else {
+            categories['Другое'].push(topic.slug);
+        }
+    });
+
+    // Отображаем категории
+    displayCategories();
+}
+
+// Отображение категорий
+function displayCategories() {
+    const container = document.getElementById('categoriesList');
+
+    let html = '';
+
+    Object.entries(categories).forEach(([category, slugs]) => {
+        if (slugs.length > 0) {
+            html += `
+                <button class="btn btn-outline-primary category-filter"
+                        data-category="${category}"
+                        onclick="filterByCategory('${category}')">
+                    ${category}
+                    <span class="badge bg-primary ms-1">${slugs.length}</span>
+                </button>
+            `;
+        }
+    });
+
+    container.innerHTML = html;
+}
+
+// Загрузка прогресса пользователя
+async function loadUserProgress() {
+    try {
+        const response = await fetch('/api/user/progress/grammar', {
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            userProgress = await response.json();
+            updateProgressStats();
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки прогресса:', error);
+    }
+}
+
+// Обновление статистики прогресса
+function updateProgressStats() {
+    const completedCount = Object.values(userProgress).filter(v => v).length;
+    const totalCount = allTopics.length;
+    const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+    document.getElementById('completedCount').textContent = completedCount;
+    document.getElementById('totalCount').textContent = totalCount;
+    document.getElementById('progressBar').style.width = `${progressPercent}%`;
+}
+
+// Настройка обработчиков событий
+function setupEventListeners() {
+    // Поиск
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', debounce(searchTopics, 300));
+
+    // Очистка поиска
+    document.getElementById('clearSearch').addEventListener('click', () => {
+        searchInput.value = '';
+        displayTopics(allTopics);
+    });
+
+    // Сортировка
+    document.getElementById('sortSelect').addEventListener('change', sortTopics);
+
+    // Сброс поиска
+    document.getElementById('resetSearchBtn').addEventListener('click', () => {
+        searchInput.value = '';
+        displayTopics(allTopics);
+    });
+
+    // Просмотр изученных
+    const viewCompletedBtn = document.getElementById('viewCompletedBtn');
+    if (viewCompletedBtn) {
+        viewCompletedBtn.addEventListener('click', toggleCompletedView);
+    }
+
+    // Начать обучение
+    document.getElementById('startLearningBtn').addEventListener('click', startLearning);
+}
+
+// Поиск тем
+function searchTopics() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+
+    if (!searchTerm) {
+        filteredTopics = [...allTopics];
+    } else {
+        filteredTopics = allTopics.filter(topic =>
+            topic.title.toLowerCase().includes(searchTerm) ||
+            (topic.description && topic.description.toLowerCase().includes(searchTerm)) ||
+            topic.slug.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    displayTopics(filteredTopics);
+}
+
+// Сортировка тем
+function sortTopics() {
+    const sortBy = document.getElementById('sortSelect').value;
+    let topicsToSort = filteredTopics.length > 0 ? filteredTopics : allTopics;
+
+    switch(sortBy) {
+        case 'alphabet':
+            topicsToSort.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+        case 'alphabet_desc':
+            topicsToSort.sort((a, b) => b.title.localeCompare(a.title));
+            break;
+        case 'difficulty':
+            topicsToSort.sort((a, b) => {
+                const difficultyOrder = { 'Начальный': 1, 'Средний': 2, 'Продвинутый': 3 };
+                return (difficultyOrder[getDifficultyLevel(a)] || 0) -
+                       (difficultyOrder[getDifficultyLevel(b)] || 0);
+            });
+            break;
+        case 'popular':
+            // Здесь можно добавить логику сортировки по популярности
+            // Пока сортируем случайно для демонстрации
+            topicsToSort.sort(() => Math.random() - 0.5);
+            break;
+    }
+
+    displayTopics(topicsToSort);
+}
+
+// Фильтрация по категории
+function filterByCategory(category) {
+    const slugs = categories[category];
+    if (!slugs) return;
+
+    const categoryTopics = allTopics.filter(topic => slugs.includes(topic.slug));
+    displayTopics(categoryTopics);
+
+    // Подсвечиваем активную категорию
+    document.querySelectorAll('.category-filter').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+// Переключение просмотра изученных тем
+function toggleCompletedView() {
+    const btn = document.getElementById('viewCompletedBtn');
+    const isShowingCompleted = btn.classList.contains('active');
+
+    if (isShowingCompleted) {
+        btn.classList.remove('active');
+        btn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Показать изученные';
+        displayTopics(filteredTopics.length > 0 ? filteredTopics : allTopics);
+    } else {
+        btn.classList.add('active');
+        btn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Показать все';
+
+        const completedTopics = allTopics.filter(topic => userProgress[topic.slug]);
+        displayTopics(completedTopics);
+    }
+}
+
+// Начать обучение
+function startLearning() {
+    // Находим первую не изученную тему или первую в списке
+    let topicToStart = allTopics.find(topic => !userProgress[topic.slug]) || allTopics[0];
+
+    if (topicToStart) {
+        window.location.href = `/grammar/${topicToStart.slug}`;
+    } else {
+        showToast('Все темы уже изучены!', 'success');
+    }
+}
+
+// Добавление в избранное
+function toggleFavorite(slug, button) {
+    const icon = button.querySelector('i');
+    const isFavorite = icon.classList.contains('bi-star-fill');
+
+    if (isFavorite) {
+        icon.className = 'bi bi-star me-2';
+        showToast('Удалено из избранного', 'info');
+    } else {
+        icon.className = 'bi bi-star-fill me-2 text-warning';
+        showToast('Добавлено в избранное', 'success');
+    }
+
+    // Здесь можно добавить запрос к API для сохранения в избранное
+    // await fetch(`/api/grammar/topics/${slug}/favorite`, { method: 'POST' });
+}
+
+// Отметка как изученного
+async function markAsCompleted(slug, completed) {
+    try {
+        const response = await fetch(`/api/user/progress/grammar/${slug}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ completed }),
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            userProgress[slug] = completed;
+            updateProgressStats();
+
+            // Перерисовываем карточки
+            const cards = document.querySelectorAll(`[data-slug="${slug}"]`);
+            cards.forEach(card => {
+                const checkIcon = card.querySelector('.bi-check-circle');
+                if (checkIcon) {
+                    checkIcon.style.display = completed ? 'inline' : 'none';
+                }
+
+                const progressBar = card.querySelector('.progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = completed ? '100%' : '0%';
+                }
+            });
+
+            showToast(completed ? 'Тема отмечена как изученная' : 'Отметка снята', 'success');
+        }
+    } catch (error) {
+        console.error('Ошибка обновления прогресса:', error);
+        showToast('Ошибка обновления прогресса', 'danger');
+    }
+}
+
+// Показать приветственную подсказку
+function showWelcomeTip() {
+    // Проверяем, показывали ли уже подсказку
+    const dontShowAgain = localStorage.getItem('grammarTipsDisabled');
+    if (dontShowAgain === 'true') return;
+
+    const tips = [
+        'Начните с тем уровня "Начальный" для постепенного изучения грамматики.',
+        'Отмечайте изученные темы, чтобы отслеживать свой прогресс.',
+        'Используйте поиск, чтобы быстро найти нужную тему.',
+        'Регулярно возвращайтесь к пройденным темам для повторения.'
+    ];
+
+    const randomTip = tips[Math.floor(Math.random() * tips.length)];
+    document.getElementById('tipContent').textContent = randomTip;
+
+    // Показываем модальное окно с задержкой
+    setTimeout(() => {
+        const tipModal = new bootstrap.Modal(document.getElementById('tipModal'));
+        tipModal.show();
+
+        // Сохраняем настройку "больше не показывать"
+        document.getElementById('dontShowAgain').addEventListener('change', function() {
+            localStorage.setItem('grammarTipsDisabled', this.checked.toString());
+        });
+    }, 1000);
+}
+
+// Вспомогательные функции
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function showToast(message, type = 'info') {
+    // Создаем контейнер для тостов если его нет
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+    }
+
+    // Создаем toast
+    const toastId = 'toast-' + Date.now();
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.className = `toast align-items-center text-white bg-${type} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'danger' ? 'bi-exclamation-circle' : 'bi-info-circle'} me-2"></i>
+                ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // Инициализируем и показываем toast
+    const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+    bsToast.show();
+
+    // Удаляем toast после скрытия
+    toast.addEventListener('hidden.bs.toast', function() {
+        toast.remove();
+    });
+}
+</script>
+
+<style>
+.topic-card {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.topic-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    border-color: #dee2e6;
+}
+
+.category-filter.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Анимация появления карточек */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.col-md-6, .col-lg-4 {
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+/* Задержка анимации для каждой карточки */
+.col-md-6:nth-child(1) { animation-delay: 0.1s; }
+.col-md-6:nth-child(2) { animation-delay: 0.2s; }
+.col-md-6:nth-child(3) { animation-delay: 0.3s; }
+.col-md-6:nth-child(4) { animation-delay: 0.4s; }
+.col-md-6:nth-child(5) { animation-delay: 0.5s; }
+.col-md-6:nth-child(6) { animation-delay: 0.6s; }
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .card-title {
+        font-size: 1.1rem;
+    }
+
+    .card-text {
+        font-size: 0.9rem;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* Стили для выпадающего меню */
+.dropdown-toggle::after {
+    display: none;
+}
+
+/* Плавный скролл */
+html {
+    scroll-behavior: smooth;
+}
+</style>
+{% endblock %}

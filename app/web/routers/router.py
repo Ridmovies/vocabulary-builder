@@ -146,6 +146,23 @@ async def categories_page(
 #         }
 #     )
 
+@router.get("/grammar", response_class=HTMLResponse)
+async def grammar_list_page(
+    request: Request,
+    user: UserDep
+):
+    """
+    Страница со списком всех тем грамматики
+    """
+    return templates.TemplateResponse(
+        "grammar_list.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )
+
+
 @router.get("/grammar/{slug}", response_class=HTMLResponse)
 async def grammar_topic_page(
     request: Request,

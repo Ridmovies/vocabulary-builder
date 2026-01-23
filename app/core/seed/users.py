@@ -9,6 +9,7 @@ USERS = [
     {"email": "user@example.com", "username": "user", "password": "string"},
     {"email": "user2@example.com", "username": "user2", "password": "string"},
     {"email": "user3@example.com", "username": "user3", "password": "string"},
+    {"email": "mom@example.com", "username": "mom", "password": "string"},
 ]
 
 USER_DEFAULT_WORDS = {
