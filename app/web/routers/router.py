@@ -128,24 +128,6 @@ async def categories_page(
     )
 
 
-# @router.get("/grammar/{slug}", response_class=HTMLResponse)
-# async def grammar_lesson_page(
-#     request: Request,
-#     user: UserDep,
-# ):
-#     """
-#     Страница урока грамматики
-#     Просто отображает шаблон, данные загружаются через API на фронте
-#     """
-#     return templates.TemplateResponse(
-#         "grammar_lesson.html",
-#         {
-#             "request": request,
-#             "user": user,
-#             # lesson не передаем, он загружается через API на фронте
-#         }
-#     )
-
 @router.get("/grammar", response_class=HTMLResponse)
 async def grammar_list_page(
     request: Request,
