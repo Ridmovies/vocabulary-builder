@@ -1,0 +1,19 @@
+{
+  "category": {
+    "name": "Phrasal Verbs",
+    "description": "Самые употребляемые фразовые глаголы",
+    "owner_id": null
+  },
+  "words": [
+    {"english": "look after", "russian": "присматривать, заботиться"},
+    {"english": "give up", "russian": "сдаваться, бросать"},
+    {"english": "get up", "russian": "вставать, просыпаться"},
+    {"english": "go out", "russian": "выходить (гулять)"},
+    {"english": "come back", "russian": "возвращаться"},
+    {"english": "take off", "russian": "снимать (одежду), взлетать (о самолёте)"},
+    {"english": "put on", "russian": "надевать"},
+    {"english": "turn on", "russian": "включать"},
+    {"english": "turn off", "russian": "выключать"},
+    {"english": "pick up", "russian": "подбирать, забирать"}
+  ]
+}

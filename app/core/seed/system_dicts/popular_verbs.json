@@ -1,0 +1,29 @@
+{
+  "category": {
+    "name": "Popular Verbs",
+    "description": "Самые употребляемые английские глаголы",
+    "owner_id": null
+  },
+  "words": [
+    {"english": "be", "russian": "быть"},
+    {"english": "have", "russian": "иметь"},
+    {"english": "do", "russian": "делать"},
+    {"english": "say", "russian": "сказать"},
+    {"english": "go", "russian": "идти"},
+    {"english": "can", "russian": "мочь"},
+    {"english": "get", "russian": "получать"},
+    {"english": "make", "russian": "делать, создавать"},
+    {"english": "know", "russian": "знать"},
+    {"english": "think", "russian": "думать"},
+    {"english": "take", "russian": "брать"},
+    {"english": "see", "russian": "видеть"},
+    {"english": "come", "russian": "приходить"},
+    {"english": "want", "russian": "хотеть"},
+    {"english": "look", "russian": "смотреть"},
+    {"english": "use", "russian": "использовать"},
+    {"english": "find", "russian": "находить"},
+    {"english": "give", "russian": "давать"},
+    {"english": "tell", "russian": "рассказывать"},
+    {"english": "work", "russian": "работать"}
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "category": {
+    "name": "Travel",
+    "description": "Путешествия",
+    "owner_id": null
+  },
+  "words": [
+    {"english": "airport", "russian": "аэропорт"},
+    {"english": "train", "russian": "поезд"},
+    {"english": "bus", "russian": "автобус"},
+    {"english": "ticket", "russian": "билет"},
+    {"english": "hotel", "russian": "отель"},
+    {"english": "passport", "russian": "паспорт"},
+    {"english": "luggage", "russian": "багаж"},
+    {"english": "map", "russian": "карта"},
+    {"english": "car", "russian": "машина"},
+    {"english": "beach", "russian": "пляж"}
+  ]
+}

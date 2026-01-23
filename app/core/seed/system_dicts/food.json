@@ -1,0 +1,19 @@
+{
+  "category": {
+    "name": "Food",
+    "description": "Еда",
+    "owner_id": null
+  },
+  "words": [
+    {"english": "bread", "russian": "хлеб"},
+    {"english": "milk", "russian": "молоко"},
+    {"english": "water", "russian": "вода"},
+    {"english": "cheese", "russian": "сыр"},
+    {"english": "apple", "russian": "яблоко"},
+    {"english": "banana", "russian": "банан"},
+    {"english": "egg", "russian": "яйцо"},
+    {"english": "fish", "russian": "рыба"},
+    {"english": "meat", "russian": "мясо"},
+    {"english": "rice", "russian": "рис"}
+  ]
+}
