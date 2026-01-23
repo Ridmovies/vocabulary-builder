@@ -4,42 +4,84 @@
 {% block title %}Добавить слово{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2 class="mb-4">Добавить новое слово</h2>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6"> <!-- Добавлен container и изменены классы колонок -->
+            <div class="card shadow-sm border-0 mt-3 mt-md-4"> <!-- Добавлена карточка с тенью -->
+                <div class="card-body p-3 p-md-4"> <!-- Отступы для мобильных -->
+                    <h2 class="mb-3 mb-md-4 text-center text-md-start">Добавить новое слово</h2>
 
-        <form id="createWordForm">
-            <!-- Английское слово -->
-            <div class="mb-3">
-                <label for="english" class="form-label">Английское слово *</label>
-                <input type="text" class="form-control" id="english" required>
+                    <form id="createWordForm">
+                        <!-- Английское слово -->
+                        <div class="mb-3">
+                            <label for="english" class="form-label">Английское слово *</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="english"
+                                   required
+                                   placeholder="Например: hello">
+                        </div>
+
+                        <!-- Русский перевод -->
+                        <div class="mb-3">
+                            <label for="russian" class="form-label">Русский перевод *</label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="russian"
+                                   required
+                                   placeholder="Например: привет">
+                        </div>
+
+                        <!-- Категория -->
+                        <div class="mb-4">
+                            <label for="category_id" class="form-label">Категория</label>
+                            <select class="form-select" id="category_id">
+                                <option value="">Загрузка категорий...</option>
+                            </select>
+                            <div class="form-text mt-1">
+                                Слово будет автоматически добавлено в категорию <strong id="defaultCategoryName">default</strong>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-save me-2"></i>
+                                Сохранить
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">
+                                <i class="bi bi-x-circle me-2"></i>
+                                Отмена
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="message" class="mt-3"></div>
+                </div>
             </div>
 
-            <!-- Русский перевод -->
-            <div class="mb-3">
-                <label for="russian" class="form-label">Русский перевод *</label>
-                <input type="text" class="form-control" id="russian" required>
+            <!-- Подсказка -->
+            <div class="card mt-3 border-0 bg-light">
+                <div class="card-body p-3">
+                    <h6 class="card-title mb-2">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>
+                        Советы
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>Используйте правильное написание английских слов</li>
+                        <li>Для фразовых глаголов указывайте оба варианта (например: "give up - сдаваться")</li>
+                        <li>Слова можно добавлять в несколько категорий позже</li>
+                    </ul>
+                </div>
             </div>
-
-            <!-- Категория -->
-            <div class="mb-3">
-                <label for="category_id" class="form-label">Категория</label>
-                <select class="form-select" id="category_id">
-                    <option value="">Без категории</option>
-                    <!-- Категории будут загружены динамически -->
-                </select>
-                <div class="form-text">Выберите категорию для слова (только ваши категории)</div>
-            </div>
-
-            <!-- Кнопка -->
-            <button type="submit" class="btn btn-primary">Сохранить</button>
-        </form>
-
-        <div id="message" class="mt-3"></div>
+        </div>
     </div>
 </div>
 
 <script>
+// Глобальные переменные
+let defaultCategoryId = null;
+
 // Загружаем категории пользователя при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     await loadUserCategories();
@@ -47,7 +89,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadUserCategories() {
     try {
-        const response = await fetch('/api/categories?scope=mine&limit=1000', {
+        const select = document.getElementById('category_id');
+        select.disabled = true;
+        select.innerHTML = '<option value="">Загрузка категорий...</option>';
+
+        const response = await fetch('/api/categories?scope=all&limit=1000', {
             method: 'GET',
             headers: {'Content-Type': 'application/json'},
             credentials: 'include'
@@ -57,44 +103,92 @@ async function loadUserCategories() {
             const categories = await response.json();
             populateCategorySelect(categories);
         } else {
-            console.error('Ошибка загрузки категорий');
+            showMessage('Ошибка загрузки категорий', 'danger');
+            populateCategorySelect([]);
         }
     } catch (error) {
         console.error('Ошибка:', error);
+        showMessage('Ошибка загрузки категорий', 'danger');
+        populateCategorySelect([]);
     }
 }
 
 function populateCategorySelect(categories) {
     const select = document.getElementById('category_id');
-
-    // Сохраняем первый option "Без категории"
-    const firstOption = select.options[0];
     select.innerHTML = '';
-    select.appendChild(firstOption);
 
-    // Добавляем категории пользователя
+    // Сначала находим категорию "default" среди всех категорий
+    const defaultCategory = categories.find(cat =>
+        cat.name.toLowerCase() === 'default' ||
+        cat.name.toLowerCase() === 'по умолчанию'
+    );
+
+    // Создаем опции
+    const defaultOption = document.createElement('option');
+
+    if (defaultCategory) {
+        defaultCategoryId = defaultCategory.id;
+        defaultOption.value = defaultCategory.id;
+        defaultOption.textContent = `${defaultCategory.name} (по умолчанию)`;
+        defaultOption.selected = true;
+
+        // Обновляем текст подсказки
+        document.getElementById('defaultCategoryName').textContent = defaultCategory.name;
+    } else {
+        // Если категории "default" нет, создаем первую опцию для выбора
+        defaultOption.value = "";
+        defaultOption.textContent = "Без категории";
+        defaultOption.selected = true;
+        defaultCategoryId = null;
+    }
+
+    select.appendChild(defaultOption);
+
+    // Разделитель
+    const divider = document.createElement('option');
+    divider.disabled = true;
+    divider.textContent = "──────────";
+    select.appendChild(divider);
+
+    // Добавляем остальные категории
     categories.forEach(category => {
+        // Пропускаем категорию "default", она уже добавлена
+        if (defaultCategory && category.id === defaultCategory.id) return;
+
         const option = document.createElement('option');
         option.value = category.id;
         option.textContent = category.name;
 
-        // Добавляем иконку или метку для пользовательских категорий
+        // Добавляем метку для пользовательских категорий
         if (category.owner_id) {
             option.textContent += ' (моя)';
         }
 
         select.appendChild(option);
     });
+
+    select.disabled = false;
 }
 
 document.getElementById('createWordForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    // Блокируем кнопку отправки
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Сохранение...';
+    submitBtn.disabled = true;
+
     // Получаем выбранную категорию
     const categorySelect = document.getElementById('category_id');
-    const selectedCategoryId = categorySelect.value;
+    let selectedCategoryId = categorySelect.value;
 
-    // Собираем данные В ПРАВИЛЬНОМ ФОРМАТЕ
+    // Если ничего не выбрано, используем категорию default
+    if (!selectedCategoryId && defaultCategoryId) {
+        selectedCategoryId = defaultCategoryId;
+    }
+
+    // Собираем данные
     const wordData = {
         english: document.getElementById('english').value.trim(),
         russian: document.getElementById('russian').value.trim(),
@@ -104,13 +198,22 @@ document.getElementById('createWordForm').addEventListener('submit', async (e) =
     // Валидация обязательных полей
     if (!wordData.english || !wordData.russian) {
         showMessage('Заполните оба обязательных поля', 'danger');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        return;
+    }
+
+    // Валидация - только английские буквы для английского слова
+    const englishRegex = /^[a-zA-Z\s\-']+$/;
+    if (!englishRegex.test(wordData.english)) {
+        showMessage('Английское слово должно содержать только английские буквы, пробелы, дефисы и апострофы', 'danger');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
         return;
     }
 
     // Отправляем запрос
     try {
-        console.log('Отправляемые данные:', wordData); // Для отладки
-
         const response = await fetch('/api/words', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -119,34 +222,125 @@ document.getElementById('createWordForm').addEventListener('submit', async (e) =
         });
 
         const data = await response.json();
-        console.log('Ответ сервера:', data); // Для отладки
 
         if (response.ok) {
-            showMessage('Слово успешно сохранено!', 'success');
-            document.getElementById('createWordForm').reset();
+            showMessage(`
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success me-3 fs-4"></i>
+                    <div>
+                        <strong>Слово успешно сохранено!</strong><br>
+                        <small class="text-muted">${wordData.english} - ${wordData.russian}</small>
+                    </div>
+                </div>
+            `, 'success');
 
-            // Сбрасываем категорию на значение по умолчанию
-            document.getElementById('category_id').selectedIndex = 0;
+            // Сбрасываем форму, но сохраняем выбранную категорию
+            document.getElementById('english').value = '';
+            document.getElementById('russian').value = '';
+            document.getElementById('english').focus();
+
+            // Если была категория по умолчанию, выбираем её снова
+            if (defaultCategoryId) {
+                categorySelect.value = defaultCategoryId;
+            }
+
         } else {
-            showMessage(data.detail || 'Ошибка при сохранении слова', 'danger');
+            let errorMessage = 'Ошибка при сохранении слова';
+            if (data.detail) {
+                if (typeof data.detail === 'string') {
+                    errorMessage = data.detail;
+                } else if (Array.isArray(data.detail)) {
+                    errorMessage = data.detail.map(err => err.msg).join(', ');
+                }
+            }
+            showMessage(errorMessage, 'danger');
         }
     } catch (error) {
         showMessage('Ошибка сети: ' + error.message, 'danger');
+    } finally {
+        // Восстанавливаем кнопку
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
     }
 });
 
 function showMessage(text, type) {
     const div = document.getElementById('message');
-    div.className = `alert alert-${type}`;
-    div.textContent = text;
+    div.innerHTML = text;
+    div.className = `alert alert-${type} alert-dismissible fade show`;
 
-    // Автоматическое скрытие сообщения об успехе через 3 секунды
+    // Добавляем кнопку закрытия для сообщений об ошибках
+    if (type === 'danger' && !div.querySelector('.btn-close')) {
+        div.innerHTML += `
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+        `;
+    }
+
+    // Автоматическое скрытие сообщения об успехе через 5 секунд
     if (type === 'success') {
         setTimeout(() => {
-            div.className = '';
-            div.textContent = '';
-        }, 3000);
+            if (div.classList.contains('show')) {
+                const bsAlert = new bootstrap.Alert(div);
+                bsAlert.close();
+            }
+        }, 5000);
     }
 }
 </script>
+
+<style>
+/* Дополнительные стили для мобильных устройств */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .card-body {
+        padding: 1.25rem !important;
+    }
+
+    .form-control, .form-select {
+        font-size: 16px; /* Предотвращает zoom на iOS */
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Анимация появления формы */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Стили для выпадающего списка */
+.form-select option:disabled {
+    color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+/* Эффект при фокусе */
+.form-control:focus, .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Стили для сообщений */
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+}
+</style>
 {% endblock %}
