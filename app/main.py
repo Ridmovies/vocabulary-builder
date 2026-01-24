@@ -21,9 +21,8 @@ from app.web.routers.router import router as web_typing_router
 async def lifespan(app: FastAPI):
     # Startup logic.
     print("🚀 Starting application...")
-    await run_seeds()
+    # await run_seeds()
     yield
-
 
 
 app = FastAPI(

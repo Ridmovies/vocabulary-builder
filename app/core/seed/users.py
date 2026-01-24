@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects.postgresql import insert
@@ -37,9 +39,30 @@ USER_DEFAULT_WORDS = {
         {"english": "after having / being", "russian": "после того как (что-то сделав / будучи кем-то)"},
         {"english": "frantic", "russian": "панический, неистовый"},
         {"english": "affirmation", "russian": "подтверждение, утверждение"},
-        {"english": "tend (to)", "russian": "иметь склонность"},
+        {"english": "tend to", "russian": "иметь склонность"},
         {"english": "offensive", "russian": "оскорбительный, наступательный"},
         {"english": "hit it off", "russian": "сразу поладить"},
+        {"english": "convinced", "russian": "убеждённый"},
+        {"english": "necessary", "russian": "необходимый"},
+        {"english": "confident", "russian": "уверенный"},
+        {"english": "treatment", "russian": "лечение, обращение"},
+        {"english": "deserve", "russian": "заслуживать"},
+        {"english": "refuse", "russian": "отказываться"},
+        {"english": "get it", "russian": "понимать, уловить"},
+        {"english": "maintenance", "russian": "обслуживание, содержание, поддержание"},
+        {"english": "afford", "russian": "позволить себе"},
+        {"english": "relieved", "russian": "испытывающий облегчение"},
+        {"english": "struggles", "russian": "трудности, борьба"},
+        {"english": "let someone down", "russian": "подвести кого-то"},
+        {"english": "took place", "russian": "произошло, имело место"},
+        {"english": "miserable", "russian": "несчастный, жалкий"},
+        {"english": "beneath", "russian": "под, ниже; недостойно"},
+        {"english": "cuisine", "russian": "кухня (национальная)"},
+        {"english": "tray", "russian": "поднос"},
+        {"english": "be considered", "russian": "считаться, рассматриваться"},
+        {"english": "is seeing", "russian": "встречается с, видится"},
+        {"english": "stare", "russian": "пристально смотреть, уставиться"},
+        {"english": "test", "russian": "test"},
 
     ],
     "user2@example.com": [
@@ -52,22 +75,23 @@ USER_DEFAULT_WORDS = {
     ],
 }
 
+logger = logging.getLogger("seed")
+logging.basicConfig(level=logging.INFO)
+
 async def seed_users(session: AsyncSession):
-    async with session.begin():
+    # --- существующие пользователи ---
+    result = await session.execute(select(User))
+    existing_users = {u.email: u for u in result.scalars().all()}
+    logger.info(f"Found {len(existing_users)} existing users.")
 
-        # --- существующие пользователи ---
-        result = await session.execute(select(User))
-        existing_users = {u.email: u for u in result.scalars().all()}
+    # --- существующие слова ---
+    result = await session.execute(select(Word))
+    existing_words = {w.english: w for w in result.scalars().all()}
+    logger.info(f"Found {len(existing_words)} existing words.")
 
-        # --- существующие слова ---
-        result = await session.execute(select(Word))
-        existing_words = {w.english: w for w in result.scalars().all()}
-
-        for u in USERS:
-            if u["email"] in existing_users:
-                continue
-
-            # --- пользователь ---
+    for u in USERS:
+        user = existing_users.get(u["email"])
+        if not user:
             user = User(
                 email=u["email"],
                 username=u["username"],
@@ -77,36 +101,58 @@ async def seed_users(session: AsyncSession):
                 is_verified=True,
             )
             session.add(user)
-            await session.flush()  # получаем user.id
+            await session.flush()
+            existing_users[u["email"]] = user
+            logger.info(f"Created user: {u['email']}")
+        else:
+            logger.info(f"User exists: {u['email']}")
 
-            # --- дефолтная категория ---
+        # --- категория default ---
+        result = await session.execute(
+            select(Category).where(
+                Category.owner_id == user.id,
+                Category.name == "default",
+            )
+        )
+        category = result.scalar_one_or_none()
+        if not category:
             category = Category(
                 name="default",
                 description="Категория по умолчанию",
                 owner_id=user.id,
             )
             session.add(category)
-            await session.flush()  # получаем category.id
+            await session.flush()
+            logger.info(f"Created default category for user: {u['email']}")
+        else:
+            logger.info(f"Default category exists for user: {u['email']}")
 
-            # --- личные слова пользователя ---
-            for w in USER_DEFAULT_WORDS.get(u["email"], []):
-                word = existing_words.get(w["english"])
-                if not word:
-                    word = Word(
-                        english=w["english"],
-                        russian=w["russian"],
-                    )
-                    session.add(word)
-                    await session.flush()
-                    existing_words[w["english"]] = word
-
-                stmt = insert(word_category).values(
-                    word_id=word.id,
-                    category_id=category.id,
-                ).on_conflict_do_nothing(
-                    index_elements=["word_id", "category_id"]
+        # --- личные слова ---
+        for w in USER_DEFAULT_WORDS.get(u["email"], []):
+            word = existing_words.get(w["english"])
+            if not word:
+                word = Word(
+                    english=w["english"],
+                    russian=w["russian"],
                 )
+                session.add(word)
+                await session.flush()
+                existing_words[w["english"]] = word
+                logger.info(f"Created word: {w['english']}")
+            else:
+                logger.info(f"Word exists: {w['english']}")
 
-                await session.execute(stmt)
+            stmt = insert(word_category).values(
+                word_id=word.id,
+                category_id=category.id,
+            ).on_conflict_do_nothing(
+                index_elements=["word_id", "category_id"]
+            )
+            await session.execute(stmt)
+            logger.info(f"Linked word '{word.english}' to category '{category.name}'")
 
+    await session.commit()
+    logger.info("✅ Users seeded with default categories and words!")
+
+    await session.commit()
     print("✅ Users seeded with default categories and words!")

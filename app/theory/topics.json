@@ -33,5 +33,15 @@
   "slug": "was-were",
   "title": "Was / Were",
   "description": "Прошедшая форма глагола to be"
+  },
+  {
+  "slug": "do-emphasis",
+  "title": "Do (emphasis)",
+  "description": "Усиление утверждений с do / does / did"
+  },
+  {
+  "slug": "after-having-being",
+  "title": "After having / being",
+  "description": "Конструкция для обозначения действия, произошедшего раньше другого"
   }
 ]
