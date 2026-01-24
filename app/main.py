@@ -12,7 +12,8 @@ from app.api.v1.words import router as words_router
 from app.api.v1.category import router as category_router
 from app.api.v1.typing import router as typing_router
 from app.api.v1.dev import router as dev_router
-from app.core.seed.run import run_seeds
+from app.api.v1.translate import router as translate_router
+
 
 from app.web.routers.router import router as web_typing_router
 
@@ -39,6 +40,7 @@ app.include_router(router=user_router, prefix="/api/users", tags=["users"])
 app.include_router(router=auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(router=theory_router, prefix="/api/grammar", tags=["grammar"])
 app.include_router(router=dev_router, prefix="/api/dev", tags=["dev"])
+app.include_router(router=translate_router, prefix="/api/translate", tags=["translate"])
 app.include_router(router=words_router, prefix="/api/words", tags=["words"])
 app.include_router(router=category_router, prefix="/api/categories", tags=["categories"])
 app.include_router(router=typing_router, prefix="/api/web", tags=["web"])
