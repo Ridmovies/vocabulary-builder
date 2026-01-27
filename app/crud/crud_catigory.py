@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, case
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
@@ -43,6 +43,14 @@ class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
                     Category.owner_id == user_id,
                 )
             )
+
+        stmt = stmt.order_by(
+            case(
+                (Category.owner_id.is_(None), 1),
+                else_=0
+            ),
+            Category.name.asc()
+        )
 
         stmt = stmt.offset(skip).limit(limit)
 
