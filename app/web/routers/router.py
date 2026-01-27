@@ -128,6 +128,23 @@ async def categories_page(
     )
 
 
+@router.get("/translate", response_class=HTMLResponse)
+async def translate_page(
+    request: Request,
+    user: UserDepOptional
+):
+    """
+    Страница перевода слов
+    """
+    return templates.TemplateResponse(
+        "translate.html",
+        {
+            "request": request,
+            "user": user
+        }
+    )
+
+
 @router.get("/grammar", response_class=HTMLResponse)
 async def grammar_list_page(
     request: Request,
