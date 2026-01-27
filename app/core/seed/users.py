@@ -62,7 +62,17 @@ USER_DEFAULT_WORDS = {
         {"english": "be considered", "russian": "считаться, рассматриваться"},
         {"english": "is seeing", "russian": "встречается с, видится"},
         {"english": "stare", "russian": "пристально смотреть, уставиться"},
-        {"english": "test", "russian": "test"},
+        {"english": "aside from", "russian": "кроме, помимо"},
+        {"english": "took place", "russian": "произошло, имело место"},
+        {"english": "claim", "russian": "утверждать, претендовать; заявление, претензия"},
+        {"english": "clue", "russian": "ключ к разгадке, подсказка"},
+        {"english": "awkward", "russian": "неловкий, неудобный"},
+        {"english": "suspended", "russian": "приостановленный, подвешенный"},
+        {"english": "maintain", "russian": "поддерживать, сохранять"},
+        {"english": "fit in with", "russian": "соответствовать, гармонировать с"},
+        {"english": "get into a mess", "russian": "вляпаться, попасть в неприятности"},
+        {"english": "unconscious", "russian": "бессознательный, без сознания"},
+
 
     ],
     "user2@example.com": [

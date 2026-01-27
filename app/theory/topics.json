@@ -43,5 +43,11 @@
   "slug": "after-having-being",
   "title": "After having / being",
   "description": "Конструкция для обозначения действия, произошедшего раньше другого"
-  }
+  },
+    {
+    "slug": "english-tenses",
+    "title": "English Tenses",
+    "description": "Все времена английского языка с примерами",
+    "level": "All"
+    }
 ]
