@@ -19,6 +19,9 @@ async def translate(
     result = await translator.translate(request.word, src=request.src_lang, dest=request.dest_lang)
 
 
+    print(f"result: {result}")
+
+
     # Возвращаем только сериализуемые поля
     return TranslationResponse(
         original=result.origin,
