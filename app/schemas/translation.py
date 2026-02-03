@@ -26,4 +26,4 @@ class TranslationResponse(BaseModel):
     translated: str
     src_lang: str
     dest_lang: str
-    all_translations: list[str] | None = None
+    all_translations: list[list] | None = None
