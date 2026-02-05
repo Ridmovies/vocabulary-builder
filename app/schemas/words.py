@@ -61,3 +61,25 @@ class WordUpdate(BaseModel):
         None,
         description="Список ID категорий для слова"
     )
+
+
+class WordQuiz(BaseModel):
+    id: int = Field(
+        ...,
+        description="id слова",
+        examples=["1"]
+    )
+    english: str | None = Field(
+        None,
+        min_length=1,
+        max_length=100,
+        description="Слово на английском языке",
+        examples=["hello"]
+    )
+    russian: str | None = Field(
+        None,
+        min_length=1,
+        max_length=100,
+        description="Перевод на русский язык",
+        examples=["привет"]
+    )

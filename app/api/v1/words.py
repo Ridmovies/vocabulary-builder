@@ -1,4 +1,4 @@
-from random import choice
+from random import choice, sample, shuffle
 
 from fastapi import APIRouter, Query, HTTPException
 from starlette import status
@@ -6,7 +6,7 @@ from starlette import status
 from app.api.deps import DBSession, UserDep
 from app.crud.crud_words import word_crud
 from app.schemas.typing import TypingCheckRequest
-from app.schemas.words import WordCreate, WordRead, WordUpdate
+from app.schemas.words import WordCreate, WordRead, WordUpdate, WordQuiz
 from app.services.favorites import FavoriteService
 from app.services.typing import TypingService
 
@@ -73,6 +73,84 @@ async def create_words(
         obj_in=word_in,
         owner_id=current_user.id
     )
+
+@router.get("/quiz")
+async def get_quiz(
+        session: DBSession,
+        current_user: UserDep,
+        skip: int = Query(0, ge=0, description="Количество пропущенных слов"),
+        limit: int = Query(100, ge=1, le=1000, description="Максимальное количество слов"),
+        is_favorite: bool | None = Query(None, description="Фильтр по избранным"),
+        category_ids: list[int] | None = Query(
+            None, description="Фильтр по категориям, список ID"
+        ),
+):
+    words = await word_crud.get_multi_with_categories(
+        db=session,
+        skip=skip,
+        limit=limit,
+        is_favorite=is_favorite,
+        user_id=current_user.id,
+        category_ids=category_ids,
+    )
+    if not words:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="В выбранной категории нет слов"
+        )
+    # Получаем рандомное слово
+    quiz_word = choice(words)
+    correct_answer = quiz_word.russian
+
+    # Берём все остальные переводы, кроме правильного
+    wrong_answers_pool = [
+        word.russian
+        for word in words
+        if word.id != quiz_word.id
+    ]
+
+    # Проверка на крайний случай
+    if len(wrong_answers_pool) < 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Недостаточно слов для генерации вариантов ответа"
+        )
+
+    # Выбираем 3 неправильных варианта
+    wrong_answers = sample(wrong_answers_pool, 3)
+
+    # Собираем варианты и перемешиваем
+    options = wrong_answers + [correct_answer]
+    shuffle(options)
+
+    return {
+        "word_id": quiz_word.id,
+        "english": quiz_word.english,
+        "options": options
+    }
+
+
+@router.post("/quiz")
+async def check_quiz_answer(
+        session: DBSession,
+        current_user: UserDep,
+        answer_in: WordQuiz
+):
+    word = await word_crud.get_for_user(
+        db=session,
+        user_id=current_user.id,
+        id=answer_in.id
+    )
+    # Приводим слова к одному регистру
+    user_answer = answer_in.russian.strip().lower()
+    correct_answer = word.russian.strip().lower()
+
+    return {
+        "is_correct": user_answer == correct_answer
+    }
+
+
+
 
 
 

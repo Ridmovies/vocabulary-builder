@@ -1,8 +1,10 @@
 from typing import Optional, List
 
+from fastapi import HTTPException
 from sqlalchemy import select, or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from starlette import status
 
 from app.crud.base import CRUDBase
 from app.models import word_category, Category, favorite_words
@@ -132,6 +134,40 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
         await db.commit()
         await db.refresh(db_obj)
         return db_obj
+
+    async def get_for_user(
+            self,
+            db: AsyncSession,
+            id: int,
+            user_id: int
+    ):
+        """
+        Получить слово по ID, доступное конкретному пользователю.
+
+        Метод возвращает слово, если:
+        - слово принадлежит пользователю (owner_id == user_id), или
+        - слово является общим для приложения (owner_id IS NULL).
+
+        Если слово не найдено или пользователь не имеет к нему доступа,
+        возбуждается HTTP 404, чтобы не раскрывать существование чужих данных.
+
+        Используется в ручках, где требуется проверка прав доступа
+        без дополнительной логики на уровне API.
+        """
+        stmt = select(Word).where(
+            Word.id == id,
+            or_(Word.owner_id == user_id, Word.owner_id.is_(None))
+        )
+        result = await db.execute(stmt)
+        word = result.scalars().one_or_none()
+
+        if not word:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Слово не найдено"
+            )
+
+        return word
 
 
 word_crud = CRUDWord(Word)
