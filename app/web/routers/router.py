@@ -111,6 +111,23 @@ async def typing_exercise_page(
     )
 
 
+@router.get("/quiz-page", response_class=HTMLResponse)
+async def quiz_page(
+    request: Request,
+    current_user: UserDep,
+):
+    """
+    Страница с квизом по словам
+    """
+    return templates.TemplateResponse(
+        "quiz.html",
+        {
+            "request": request,
+            "user": current_user
+        }
+    )
+
+
 @router.get("/categories", response_class=HTMLResponse)
 async def categories_page(
     request: Request,

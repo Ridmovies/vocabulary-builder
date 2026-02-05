@@ -1,0 +1,527 @@
+<!-- templates/quiz.html -->
+{% extends "base.html" %}
+
+{% block title %}Квиз по словам - English Learning{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Заголовок -->
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="display-4 fw-bold mb-3">Проверка знаний</h1>
+            <p class="lead text-muted">Выберите правильный перевод английского слова</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Карточка настроек квиза -->
+            <div class="card shadow-sm border-0 mb-4" id="settingsCard">
+                <div class="card-body p-4">
+                    <h4 class="card-title mb-4">Настройки квиза</h4>
+
+                    <form id="quizSettingsForm">
+                        <!-- Фильтр по категориям -->
+                        <div class="mb-3">
+                            <label class="form-label">Выберите категории</label>
+                            <div class="form-text mb-2">Оставьте пустым, чтобы выбрать все категории</div>
+                            <select class="form-select" id="categoryIds" multiple>
+                                <!-- Категории будут загружены через JavaScript -->
+                            </select>
+                            <div class="form-text">Удерживайте Ctrl для выбора нескольких категорий</div>
+                        </div>
+
+                        <!-- Фильтр по избранным -->
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isFavorite">
+                                <label class="form-check-label" for="isFavorite">
+                                    Только избранные слова
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Параметры пагинации -->
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="limit" class="form-label">Количество слов для выбора</label>
+                                <input type="number" class="form-control" id="limit" min="1" max="1000" value="50">
+                                <div class="form-text">Максимум 1000 слов</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="skip" class="form-label">Пропустить слов</label>
+                                <input type="number" class="form-control" id="skip" min="0" value="0">
+                                <div class="form-text">Начните с указанного номера слова</div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="startQuizBtn">
+                                <i class="bi bi-play-circle me-2"></i>
+                                Начать квиз
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Карточка вопроса (изначально скрыта) -->
+            <div class="card shadow-lg border-0 d-none" id="quizCard">
+                <div class="card-body p-4">
+                    <!-- Статистика -->
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-center">
+                            <div class="stat-number text-success" id="correctCount">0</div>
+                            <div class="text-muted">Правильно</div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="stat-number text-danger" id="wrongCount">0</div>
+                            <div class="text-muted">Неправильно</div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="stat-number text-primary" id="totalCount">0</div>
+                            <div class="text-muted">Всего вопросов</div>
+                        </div>
+                    </div>
+
+                    <!-- Вопрос -->
+                    <div class="text-center py-5">
+                        <h3 class="mb-4">Выберите перевод слова:</h3>
+                        <div class="display-2 fw-bold text-primary mb-5" id="questionWord"></div>
+
+                        <!-- Варианты ответов -->
+                        <div class="row g-3" id="optionsContainer">
+                            <!-- Варианты будут сгенерированы здесь -->
+                        </div>
+
+                        <!-- Кнопка паузы -->
+<!--                        <div class="mt-5">-->
+<!--                            <button class="btn btn-outline-secondary" id="pauseQuizBtn">-->
+<!--                                <i class="bi bi-pause-circle me-2"></i>-->
+<!--                                Пауза-->
+<!--                            </button>-->
+<!--                        </div>-->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Карточка результата (скрыта) -->
+            <div class="card shadow-lg border-0 d-none" id="resultCard">
+                <div class="card-body p-5 text-center">
+                    <div class="mb-4">
+                        <div class="display-1 mb-3" id="resultIcon"></div>
+                        <h2 class="mb-3" id="resultTitle"></h2>
+                        <p class="lead" id="resultMessage"></p>
+                    </div>
+
+                    <!-- Правильный ответ (если был ошибка) -->
+                    <div class="alert alert-info d-none" id="correctAnswerAlert">
+                        <h5 class="alert-heading">Правильный ответ:</h5>
+                        <div class="display-6" id="correctAnswerText"></div>
+                    </div>
+
+                    <!-- Кнопка следующего вопроса -->
+                    <button class="btn btn-primary btn-lg mt-4" id="nextQuestionBtn">
+                        <i class="bi bi-arrow-right-circle me-2"></i>
+                        Следующий вопрос
+                    </button>
+                </div>
+            </div>
+
+            <!-- Прогресс-бар -->
+            <div class="progress mt-4 d-none" style="height: 8px;" id="progressBar">
+                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                     role="progressbar"
+                     style="width: 0%"
+                     id="progressFill"></div>
+            </div>
+
+            <!-- Инструкция -->
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>Как это работает</h5>
+                    <ul class="mb-0">
+                        <li>Настройте фильтры и начните квиз</li>
+                        <li>Система покажет английское слово и 4 варианта перевода</li>
+                        <li>Выберите правильный вариант - система сразу покажет результат</li>
+                        <li>После результата автоматически будет загружен следующий вопрос</li>
+                        <li>Вы можете поставить квиз на паузу в любой момент</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Загрузка категорий при загрузке страницы
+        loadCategories();
+
+        // Инициализация переменных
+        let currentQuizData = null;
+        let correctAnswers = 0;
+        let wrongAnswers = 0;
+        let totalQuestions = 0;
+
+        // Обработка начала квиза
+        const quizSettingsForm = document.getElementById('quizSettingsForm');
+        quizSettingsForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await startQuiz();
+        });
+
+        // Обработка паузы
+        document.getElementById('pauseQuizBtn').addEventListener('click', pauseQuiz);
+
+        // Обработка следующего вопроса
+        document.getElementById('nextQuestionBtn').addEventListener('click', getNextQuestion);
+    });
+
+    // Загрузка категорий из API
+    async function loadCategories() {
+        try {
+            const response = await fetch('/api/categories', {
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`
+                }
+            });
+
+            if (response.ok) {
+                const categories = await response.json();
+                const select = document.getElementById('categoryIds');
+
+                categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = category.name;
+                    select.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки категорий:', error);
+        }
+    }
+
+    // Начало квиза
+    async function startQuiz() {
+        try {
+            const startBtn = document.getElementById('startQuizBtn');
+            const originalText = startBtn.innerHTML;
+
+            // Показать состояние загрузки
+            startBtn.disabled = true;
+            startBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Загрузка...';
+
+            // Сброс статистики
+            resetStats();
+
+            // Получить первый вопрос
+            const success = await getQuizQuestion();
+
+            if (success) {
+                // Переключить отображение
+                document.getElementById('settingsCard').classList.add('d-none');
+                document.getElementById('quizCard').classList.remove('d-none');
+                document.getElementById('progressBar').classList.remove('d-none');
+
+                // Обновить прогресс
+                updateProgressBar();
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showAlert('danger', 'Произошла ошибка при начале квиза');
+        } finally {
+            const startBtn = document.getElementById('startQuizBtn');
+            startBtn.disabled = false;
+            startBtn.innerHTML = originalText;
+        }
+    }
+
+    // Получение нового вопроса
+    async function getQuizQuestion() {
+        try {
+            // Сбор параметров
+            const params = new URLSearchParams();
+
+            params.append('skip', document.getElementById('skip').value);
+            params.append('limit', document.getElementById('limit').value);
+
+            const isFavorite = document.getElementById('isFavorite').checked;
+            if (isFavorite) {
+                params.append('is_favorite', 'true');
+            }
+
+            const categorySelect = document.getElementById('categoryIds');
+            const selectedCategories = Array.from(categorySelect.selectedOptions).map(option => option.value);
+            selectedCategories.forEach(id => {
+                params.append('category_ids', id);
+            });
+
+            // Вызов API
+            const response = await fetch(`/api/words/quiz?${params.toString()}`, {
+                headers: {
+                    'Authorization': `Bearer ${getAuthToken()}`
+                }
+            });
+
+            if (response.ok) {
+                const quizData = await response.json();
+                currentQuizData = quizData;
+                displayQuizQuestion(quizData);
+                return true;
+            } else {
+                const error = await response.json();
+                if (response.status === 404) {
+                    showAlert('warning', 'В выбранной категории нет слов для квиза');
+                } else {
+                    showAlert('danger', `Ошибка: ${error.detail || 'Не удалось получить вопрос'}`);
+                }
+                return false;
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showAlert('danger', 'Произошла ошибка при получении вопроса');
+            return false;
+        }
+    }
+
+    // Отображение вопроса
+    function displayQuizQuestion(quizData) {
+        const questionWord = document.getElementById('questionWord');
+        const optionsContainer = document.getElementById('optionsContainer');
+
+        // Установить вопрос
+        questionWord.textContent = quizData.english;
+
+        // Очистить предыдущие варианты
+        optionsContainer.innerHTML = '';
+
+        // Создать кнопки для вариантов ответов
+        quizData.options.forEach((option, index) => {
+            const col = document.createElement('div');
+            col.className = 'col-md-6 mb-3';
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-outline-primary btn-lg w-100 py-4 option-btn';
+            button.style.fontSize = '1.2rem';
+            button.textContent = option;
+
+            // Добавить обработчик выбора ответа
+            button.onclick = () => checkAnswer(option, quizData.word_id);
+
+            col.appendChild(button);
+            optionsContainer.appendChild(col);
+        });
+
+        // Обновить счетчик вопросов
+        updateStats();
+
+        // Скрыть карточку результата, показать карточку вопроса
+        document.getElementById('resultCard').classList.add('d-none');
+        document.getElementById('quizCard').classList.remove('d-none');
+    }
+
+    // Проверка ответа
+    async function checkAnswer(selectedAnswer, wordId) {
+        try {
+            // Блокировать кнопки вариантов
+            const optionButtons = document.querySelectorAll('.option-btn');
+            optionButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-outline-secondary');
+            });
+
+            // Проверить ответ через API
+            const response = await fetch('/api/words/quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getAuthToken()}`
+                },
+                body: JSON.stringify({
+                    id: wordId,
+                    russian: selectedAnswer
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                showResult(selectedAnswer, result.is_correct);
+            } else {
+                showAlert('danger', 'Ошибка при проверке ответа');
+                // Разблокировать кнопки
+                optionButtons.forEach(btn => btn.disabled = false);
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showAlert('danger', 'Произошла ошибка');
+        }
+    }
+
+    // Показать результат
+    async function showResult(selectedAnswer, isCorrect) {
+        const resultCard = document.getElementById('resultCard');
+        const resultIcon = document.getElementById('resultIcon');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultMessage = document.getElementById('resultMessage');
+        const correctAnswerAlert = document.getElementById('correctAnswerAlert');
+        const correctAnswerText = document.getElementById('correctAnswerText');
+
+        // Обновить статистику
+        if (isCorrect) {
+            correctAnswers++;
+            resultIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+            resultTitle.textContent = 'Правильно!';
+            resultMessage.textContent = 'Отличная работа!';
+            correctAnswerAlert.classList.add('d-none');
+        } else {
+            wrongAnswers++;
+            resultIcon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+            resultTitle.textContent = 'Неправильно';
+            resultMessage.textContent = 'Ваш ответ: ' + selectedAnswer;
+
+            // Показать правильный ответ
+            // В реальном приложении нужно получить правильный ответ из API
+            // Для демонстрации используем данные из текущего вопроса
+            if (currentQuizData) {
+                // Найдем правильный ответ среди вариантов
+                // В реальном API нужно бы запросить правильный перевод
+                correctAnswerText.textContent = '...'; // Заглушка
+                correctAnswerAlert.classList.remove('d-none');
+            }
+        }
+
+        totalQuestions = correctAnswers + wrongAnswers;
+        updateStatsDisplay();
+
+        // Переключить отображение
+        document.getElementById('quizCard').classList.add('d-none');
+        resultCard.classList.remove('d-none');
+
+        // Обновить прогресс-бар
+        updateProgressBar();
+
+        // Автоматически загрузить следующий вопрос через 2 секунды
+        setTimeout(() => {
+            if (!resultCard.classList.contains('d-none')) {
+                getNextQuestion();
+            }
+        }, 2000);
+    }
+
+    // Получить следующий вопрос
+    async function getNextQuestion() {
+        await getQuizQuestion();
+    }
+
+    // Пауза квиза
+    function pauseQuiz() {
+        // Скрыть карточку вопроса
+        document.getElementById('quizCard').classList.add('d-none');
+        document.getElementById('resultCard').classList.add('d-none');
+        document.getElementById('progressBar').classList.add('d-none');
+
+        // Показать карточку настроек
+        document.getElementById('settingsCard').classList.remove('d-none');
+
+        showAlert('info', 'Квиз приостановлен. Настройте параметры и начните снова.');
+    }
+
+    // Сброс статистики
+    function resetStats() {
+        correctAnswers = 0;
+        wrongAnswers = 0;
+        totalQuestions = 0;
+        updateStatsDisplay();
+    }
+
+    // Обновление отображения статистики
+    function updateStatsDisplay() {
+        document.getElementById('correctCount').textContent = correctAnswers;
+        document.getElementById('wrongCount').textContent = wrongAnswers;
+        document.getElementById('totalCount').textContent = totalQuestions;
+    }
+
+    // Обновление статистики (увеличить общий счет)
+    function updateStats() {
+        // totalQuestions обновляется в showResult
+        updateStatsDisplay();
+    }
+
+    // Обновление прогресс-бара
+    function updateProgressBar() {
+        // В бесконечном квизе прогресс показывает активность
+        // Можно сделать анимацию или просто индикатор активности
+        const progressFill = document.getElementById('progressFill');
+        progressFill.style.width = '100%';
+
+        // Сбросить анимацию
+        setTimeout(() => {
+            progressFill.style.width = '0%';
+        }, 50);
+    }
+
+    // Вспомогательные функции
+    function getAuthToken() {
+        // В реальном приложении токен должен храниться безопасно
+        return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    }
+
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+        alertDiv.style.zIndex = '1050';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(alertDiv);
+
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+</script>
+
+<style>
+    .option-btn {
+        transition: all 0.3s ease;
+    }
+
+    .option-btn:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .option-btn:active:not(:disabled) {
+        transform: translateY(-1px);
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+
+    #quizCard {
+        transition: all 0.5s ease;
+    }
+
+    #resultCard {
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
