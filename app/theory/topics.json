@@ -1,5 +1,10 @@
 [
   {
+    "slug": "lecture_1",
+    "title": "Лекция 1",
+    "description": "Лекция 1"
+  },
+  {
     "slug": "present-simple",
     "title": "Present Simple",
     "description": "Как говорить о привычках и фактах"
