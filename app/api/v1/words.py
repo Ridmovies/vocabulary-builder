@@ -149,11 +149,6 @@ async def check_quiz_answer(
         "is_correct": user_answer == correct_answer
     }
 
-
-
-
-
-
 @router.get(
     "/random",
     response_model=WordRead,

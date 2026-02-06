@@ -8,7 +8,7 @@
     <!-- Заголовок -->
     <div class="row mb-5">
         <div class="col-12 text-center">
-            <h1 class="display-4 fw-bold mb-3">Проверка знаний</h1>
+<!--            <h1 class="display-4 fw-bold mb-3">Проверка знаний</h1>-->
             <p class="lead text-muted">Выберите правильный перевод английского слова</p>
         </div>
     </div>
@@ -86,7 +86,7 @@
 
                     <!-- Вопрос -->
                     <div class="text-center py-5">
-                        <h3 class="mb-4">Выберите перевод слова:</h3>
+<!--                        <h3 class="mb-4">Выберите перевод слова:</h3>-->
                         <div class="display-2 fw-bold text-primary mb-5" id="questionWord"></div>
 
                         <!-- Варианты ответов -->
@@ -120,11 +120,11 @@
                         <div class="display-6" id="correctAnswerText"></div>
                     </div>
 
-                    <!-- Кнопка следующего вопроса -->
-                    <button class="btn btn-primary btn-lg mt-4" id="nextQuestionBtn">
-                        <i class="bi bi-arrow-right-circle me-2"></i>
-                        Следующий вопрос
-                    </button>
+<!--                    &lt;!&ndash; Кнопка следующего вопроса &ndash;&gt;-->
+<!--                    <button class="btn btn-primary btn-lg mt-4" id="nextQuestionBtn">-->
+<!--                        <i class="bi bi-arrow-right-circle me-2"></i>-->
+<!--                        Следующий вопрос-->
+<!--                    </button>-->
                 </div>
             </div>
 
@@ -134,20 +134,6 @@
                      role="progressbar"
                      style="width: 0%"
                      id="progressFill"></div>
-            </div>
-
-            <!-- Инструкция -->
-            <div class="card border-0 bg-light mt-4">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>Как это работает</h5>
-                    <ul class="mb-0">
-                        <li>Настройте фильтры и начните квиз</li>
-                        <li>Система покажет английское слово и 4 варианта перевода</li>
-                        <li>Выберите правильный вариант - система сразу покажет результат</li>
-                        <li>После результата автоматически будет загружен следующий вопрос</li>
-                        <li>Вы можете поставить квиз на паузу в любой момент</li>
-                    </ul>
-                </div>
             </div>
         </div>
     </div>
@@ -363,57 +349,70 @@
         }
     }
 
-    // Показать результат
-    async function showResult(selectedAnswer, isCorrect) {
-        const resultCard = document.getElementById('resultCard');
-        const resultIcon = document.getElementById('resultIcon');
-        const resultTitle = document.getElementById('resultTitle');
-        const resultMessage = document.getElementById('resultMessage');
-        const correctAnswerAlert = document.getElementById('correctAnswerAlert');
-        const correctAnswerText = document.getElementById('correctAnswerText');
+// Показать результат
+async function showResult(selectedAnswer, isCorrect) {
+    const resultCard = document.getElementById('resultCard');
+    const resultIcon = document.getElementById('resultIcon');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultMessage = document.getElementById('resultMessage');
+    const correctAnswerAlert = document.getElementById('correctAnswerAlert');
+    const correctAnswerText = document.getElementById('correctAnswerText');
 
-        // Обновить статистику
-        if (isCorrect) {
-            correctAnswers++;
-            resultIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
-            resultTitle.textContent = 'Правильно!';
-            resultMessage.textContent = 'Отличная работа!';
-            correctAnswerAlert.classList.add('d-none');
-        } else {
-            wrongAnswers++;
-            resultIcon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
-            resultTitle.textContent = 'Неправильно';
-            resultMessage.textContent = 'Ваш ответ: ' + selectedAnswer;
+    // Обновить статистику
+    if (isCorrect) {
+        correctAnswers++;
+        resultIcon.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
+        resultTitle.textContent = 'Правильно!';
+        resultMessage.textContent = 'Отличная работа!';
+        correctAnswerAlert.classList.add('d-none');
+    } else {
+        wrongAnswers++;
+        resultIcon.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
+        resultTitle.textContent = 'Неправильно';
+        resultMessage.textContent = 'Ваш ответ: ' + selectedAnswer;
 
-            // Показать правильный ответ
-            // В реальном приложении нужно получить правильный ответ из API
-            // Для демонстрации используем данные из текущего вопроса
-            if (currentQuizData) {
-                // Найдем правильный ответ среди вариантов
-                // В реальном API нужно бы запросить правильный перевод
-                correctAnswerText.textContent = '...'; // Заглушка
+        // Получить и показать правильный ответ из API
+        if (currentQuizData) {
+            try {
+                const response = await fetch(`/api/words/${currentQuizData.word_id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${getAuthToken()}`
+                    }
+                });
+
+                if (response.ok) {
+                    const wordData = await response.json();
+                    correctAnswerText.textContent = wordData.russian;
+                    correctAnswerAlert.classList.remove('d-none');
+                } else {
+                    correctAnswerText.textContent = 'Не удалось загрузить правильный ответ';
+                    correctAnswerAlert.classList.remove('d-none');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки правильного ответа:', error);
+                correctAnswerText.textContent = 'Ошибка загрузки ответа';
                 correctAnswerAlert.classList.remove('d-none');
             }
         }
-
-        totalQuestions = correctAnswers + wrongAnswers;
-        updateStatsDisplay();
-
-        // Переключить отображение
-        document.getElementById('quizCard').classList.add('d-none');
-        resultCard.classList.remove('d-none');
-
-        // Обновить прогресс-бар
-        updateProgressBar();
-
-        // Автоматически загрузить следующий вопрос через 2 секунды
-        setTimeout(() => {
-            if (!resultCard.classList.contains('d-none')) {
-                getNextQuestion();
-            }
-        }, 2000);
     }
 
+    totalQuestions = correctAnswers + wrongAnswers;
+    updateStatsDisplay();
+
+    // Переключить отображение
+    document.getElementById('quizCard').classList.add('d-none');
+    resultCard.classList.remove('d-none');
+
+    // Обновить прогресс-бар
+    updateProgressBar();
+
+    // Автоматически загрузить следующий вопрос через 3 секунды (даем время увидеть ответ)
+    setTimeout(() => {
+        if (!resultCard.classList.contains('d-none')) {
+            getNextQuestion();
+        }
+    }, 2000);
+}
     // Получить следующий вопрос
     async function getNextQuestion() {
         await getQuizQuestion();

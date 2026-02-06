@@ -2,7 +2,6 @@ from fastapi import APIRouter
 from starlette.responses import Response
 
 from app.api.deps import DBSession
-from app.crud.crud_user import user_crud
 from app.schemas.user import UserCreate, UserRead
 from app.services.users import UserService
 
@@ -22,5 +21,3 @@ async def register(
         db=session,
         obj_in=user_in,
     )
-
-    # return await user_crud.create(db=session, obj_in=user_in)
