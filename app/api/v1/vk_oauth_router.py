@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 from starlette import status
-from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.responses import JSONResponse
 
 from app.api.deps import DBSession
 from app.services.vk_oauth_service import VKOAuthService
@@ -47,12 +46,12 @@ async def vk_register_or_login():
     response_description="Ссылка для авторизации VK ID для не авторизованных пользователей",
     response_class=JSONResponse,
 )
-async def get_vk_auth_url(request: Request):
+async def get_vk_auth_url():
     """
     Шаг 1: Генерация ссылки на VK ID авторизацию (PKCE + state)
     """
-    auth_url, *args = await VKOAuthService.set_params("login", None)
-    return JSONResponse(content={"auth_url": auth_url})
+    auth_url = await VKOAuthService.get_vk_auth_url()
+    return {"auth_url": auth_url}
 
 
 
@@ -78,19 +77,14 @@ async def get_vk_auth_url(request: Request):
     response_class=JSONResponse,
 )
 async def callback_vk(
-    request: Request,
     session: DBSession,
-    response: Response,
     code: str,
     state: str,
     device_id: str,
 ):
-    service = VKOAuthService()
-    return await service.exchange_codes_for_vk_tokens(
-        request,
-        session,
-        response,
-        code,
-        state,
-        device_id,
+    return await VKOAuthService.exchange_codes_for_vk_tokens(
+        session=session,
+        code=code,
+        state=state,
+        device_id=device_id,
     )
