@@ -3,6 +3,7 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from app.api.deps import DBSession
+from app.schemas.user import UserRead
 from app.services.vk_oauth_service import VKOAuthService
 
 router = APIRouter()
@@ -66,15 +67,7 @@ async def get_vk_auth_url():
 
     Возвращает access/refresh токены для дальнейшей работы.
     """,
-    responses={
-        400: {
-            "description": "Ошибка авторизации",
-            "content": {
-                "application/json": {"example": {"detail": "Ошибка авторизации"}}
-            },
-        },
-    },
-    response_class=JSONResponse,
+    response_model=UserRead
 )
 async def callback_vk(
     session: DBSession,
@@ -82,9 +75,13 @@ async def callback_vk(
     state: str,
     device_id: str,
 ):
-    return await VKOAuthService.exchange_codes_for_vk_tokens(
-        session=session,
+    vk_access_token = await VKOAuthService.get_access_token_from_code(
         code=code,
         state=state,
         device_id=device_id,
+    )
+
+    return await VKOAuthService.register_or_login_vk(
+        session=session,
+        vk_access_token=vk_access_token,
     )
