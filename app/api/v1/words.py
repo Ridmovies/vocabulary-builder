@@ -149,6 +149,36 @@ async def check_quiz_answer(
         "is_correct": user_answer == correct_answer
     }
 
+
+
+@router.get("/quick", response_model=WordQuiz)
+async def get_random_translation(
+        session: DBSession,
+        current_user: UserDep,
+        skip: int = Query(0, ge=0, description="Количество пропущенных слов"),
+        limit: int = Query(100, ge=1, le=1000, description="Максимальное количество слов"),
+        is_favorite: bool | None = Query(None, description="Фильтр по избранным"),
+        category_ids: list[int] | None = Query(
+            None, description="Фильтр по категориям, список ID"
+        )
+):
+    quick_translation = await word_crud.get_multi_with_categories(
+        db=session,
+        skip=skip,
+        limit=limit,
+        is_favorite=is_favorite,
+        user_id=current_user.id,
+        category_ids=category_ids,
+    )
+    if not quick_translation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="В выбранной категории нет слов"
+        )
+
+    random_quick = choice(quick_translation)
+    return random_quick
+
 @router.get(
     "/random",
     response_model=WordRead,
