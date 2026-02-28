@@ -2,7 +2,7 @@
 import secrets
 from typing import Literal
 
-from pydantic import AnyHttpUrl
+from pydantic import AnyHttpUrl, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -53,6 +53,13 @@ class Settings(BaseSettings):
 
     # CORS (важно для кук!)
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = ["http://localhost:8000"]
+
+
+    # VK OAUTH
+    VK_OAUTH_CLIENT_ID: str | None = None
+    # Защищённый ключ
+    VK_OAUTH_CLIENT_SECRET: SecretStr | None = None
+    VK_OAUTH_REDIRECT_URI: str | None = None
 
 
 settings = Settings()
