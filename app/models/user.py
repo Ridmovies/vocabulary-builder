@@ -35,3 +35,10 @@ class User(Base):
         lazy="selectin",
         back_populates="favorited_by",
     )
+
+    # Отношение "один-ко-многим" с моделью OAuthAccount
+    # Один пользователь может иметь несколько связанных OAuth-аккаунтов
+    oauth_accounts: Mapped[list["OAuthAccount"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",  # Удалять OAuth-аккаунты при удалении пользователя
+    )
