@@ -9,11 +9,8 @@ class OAuthAccount(Base):
 
     __tablename__ = "oauth_account"
 
-    id: Mapped[int] = mapped_column(
-        primary_key=True,
-    )
     user_id: Mapped[int] = mapped_column(
-        ForeignKey("user.id", ondelete="cascade"),
+        ForeignKey("users.id", ondelete="cascade"),
         nullable=False,  # OAuth-аккаунт должен быть связан с пользователем
         # index=True # Для производительности поиска по user_id
     )
