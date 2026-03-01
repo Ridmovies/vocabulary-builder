@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     )
 
     MODE: Literal["DEV", "TEST", "PROD", "STAGING"]
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG"
 
     DATABASE_URL: str = "postgresql+asyncpg://postgres:root@localhost/vocabulary"
 
