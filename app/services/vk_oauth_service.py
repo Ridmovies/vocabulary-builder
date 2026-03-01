@@ -3,20 +3,19 @@ import hashlib
 import secrets
 import time
 import urllib.parse
-from datetime import datetime
 from uuid import uuid4
 
 import httpx
 
 from fastapi import HTTPException
-from fastapi.logger import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import DBSession
 from app.core.config import settings
+from app.core.logger import logger
 from app.core.security import create_access_token
 from app.crud.crud_oauth import OAuthAccountRepository
-from app.crud.crud_user import CRUDUser, user_crud
+from app.crud.crud_user import user_crud
 from app.models import User
 from app.schemas.oauth import OAuthAccountCreate
 from app.utils.pwd import get_password_hash
@@ -41,8 +40,17 @@ class VKOAuthService:
 
     @staticmethod
     def generate_pkce_pair():
-        """Генерация пары PKCE"""
+        """
+        Генерация пары PKCE (Proof Key for Code Exchange).
+        PKCE добавляет криптографическое доказательство того, что тот,
+        кто обменивает authorization code на access_token, — тот же субъект, который инициировал авторизацию.
+        Это защита от перехвата кода (authorization code interception attack).
+        """
+        # code_verifier — криптографически случайная строка высокой энтропии (43–128 символов по стандарту RFC 7636).
+        # В коде используется secrets.token_urlsafe(64) — это генерация криптостойкой строки.
+        # Обрезка до 128 символов гарантирует соответствие верхнему лимиту.
         code_verifier = secrets.token_urlsafe(64)[:128]
+        # code_challenge — это публичное криптографическое обязательство (commitment) к будущему code_verifier.
         code_challenge = (
             base64.urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest())
             .decode()
@@ -52,8 +60,9 @@ class VKOAuthService:
 
     @staticmethod
     async def get_vk_auth_url():
-        """Установка параметров авторизации и сохранение их в Redis"""
+        """Установка параметров авторизации"""
         code_verifier, code_challenge = VKOAuthService.generate_pkce_pair()
+        # state Это случайный идентификатор сессии авторизации
         state = secrets.token_urlsafe(16)
 
         storage_data = {
@@ -93,7 +102,6 @@ class VKOAuthService:
         # удаляем после чтения (одноразовый)
         del _state_store[state]
         return entry["data"]
-
 
 
     @staticmethod
@@ -157,7 +165,8 @@ class VKOAuthService:
                     url=auth_url,
                     data=data,
                 )
-
+                # Содержит идентификационные данные пользователя (sub = VK user_id).
+                # это криптографически подписанное доказательство личности пользователя, которое backend может использовать, не обращаясь к VK API напрямую.
                 vk_id_token = res.json().get("id_token")
                 if not vk_id_token:
                     e = "Не удалось получить id_token от VK."
@@ -205,7 +214,7 @@ class VKOAuthService:
             logger.error("VK timeout")
             raise HTTPException(status_code=504, detail="VK auth timeout")
 
-        logger.info(
+        logger.debug(
             "VK response status=%s body=%s", vk_response.status_code, vk_response.text
         )
 
@@ -219,47 +228,6 @@ class VKOAuthService:
 
         return payload["user"]
 
-    # @staticmethod
-    # async def get_access_token_from_code(
-    #         code: str,
-    #         state: str,
-    #         device_id: str
-    # ) -> str:
-    #     """
-    #     Обмен authorization code на VK access_token
-    #     1. Проверяет и извлекает code_verifier из state.
-    #     2. Делает POST запрос к VK для получения access_token.
-    #     Возвращает access_token для запроса user_info.
-    #     """
-    #     # 1. Валидация state и извлечение code_verifier
-    #     stored_data = await VKOAuthService.validate_state(state)
-    #     code_verifier = stored_data["code_verifier"]
-    #
-    #     # 2. Подготовка данных для обмена кода на токены
-    #     data = {
-    #         "grant_type": "authorization_code",
-    #         "code": code,
-    #         "client_id": VKOAuthService.client_id,
-    #         "client_secret": VKOAuthService.client_secret,
-    #         "redirect_uri": VKOAuthService.vk_redirect_uri,
-    #         "code_verifier": code_verifier,
-    #         "device_id": device_id,
-    #     }
-    #
-    #     # 3. POST запрос к VK
-    #     async with httpx.AsyncClient(timeout=60.0) as client:
-    #         resp = await client.post("https://oauth.vk.com/access_token", data=data)
-    #
-    #     if resp.status_code != 200:
-    #         logger.error("VK token exchange failed: %s", resp.text)
-    #         raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    #
-    #     token_data = resp.json()
-    #     access_token = token_data.get("access_token")
-    #     if not access_token:
-    #         raise HTTPException(status_code=400, detail="VK did not return access_token")
-    #
-    #     return access_token
 
     @staticmethod
     async def register_or_login_vk(
@@ -267,49 +235,34 @@ class VKOAuthService:
             vk_access_token: str,
     ):
         """
-        Регистрация, привязка или вход пользователя через VK OAuth.
+        Регистрация или вход пользователя через VK OAuth.
 
-        Фактический алгоритм работы:
+        Алгоритм работы:
 
-        1. Получение user_info через VKOAuthService.
-        2. Извлечение vk_id (user_id провайдера) — основной идентификатор внешнего аккаунта.
-        3. Извлечение email:
-           - Если email отсутствует, генерируется технический email вида
-             user_<hash>@temp.local на основе vk_id.
-           - Это позволяет сохранить инвариант обязательности email в модели.
+        1. Получение информации о пользователе через VK API используя vk_access_token:
+           - user_id, email, имя, фамилия, пол, аватар, день рождения.
 
-        4. Поиск существующей OAuth-привязки:
-           - Выполняется поиск OAuthAccount по (provider="vk", account_id=vk_id).
-           - Если запись найдена — пользователь определяется через oauth_account.user
-             и выполняется вход.
+        2. Подготовка данных для локальной модели пользователя:
+           - Если email отсутствует, генерируется временный email на основе vk_id.
+           - Генерируется уникальный username.
+           - Создаётся случайный криптографический пароль и хешируется.
 
-        5. Если OAuthAccount не найден:
-           - Выполняется поиск пользователя по email.
-           - Если пользователь найден — создаётся OAuthAccount и VK
-             привязывается к существующему аккаунту.
+        3. Проверка существования аккаунта:
+           a) По vk_id через OAuthAccountRepository.
+              - Если найден, используется связанный пользователь.
+           b) Если vk_id не найден, проверяется существующий пользователь по email.
+              - Если найден, привязывается VK OAuth аккаунт к существующему пользователю.
+           c) Если пользователь не найден, создаётся новый пользователь с подготовленными данными и привязывается VK OAuth аккаунт.
 
-        6. Если пользователь не найден ни по vk_id, ни по email:
-           - Создаётся новый пользователь:
-             • генерируется технический login;
-             • генерируется случайный пароль и сохраняется в хешированном виде;
-             • is_oauth_user=True;
-             • is_verified=True.
-           - Создаётся профиль пользователя (если данные валидны).
-           - Создаётся OAuthAccount с привязкой к VK.
+        4. Создание локального JWT access_token для пользователя с использованием внутренней функции create_access_token.
 
-        7. После определения или создания пользователя
-           выполняется авторизация через AuthService.vk_login.
+        5. Возврат словаря с ключом "access_token", который используется frontend для аутентификации с backend.
 
-        Ключевые принципы реализации:
+        Особенности:
 
-        - Идентификация пользователя при входе происходит
-          в первую очередь по (provider, account_id), а не по email.
-        - Email используется как механизм объединения аккаунтов,
-          если VK ранее не был привязан.
-        - OAuth-пользователь не знает сгенерированный пароль;
-          при необходимости обычного входа реализуется отдельный флоу установки пароля.
-        - Технический email используется только для соблюдения
-          инварианта модели при отсутствии email от провайдера.
+        - Пользователь не получает пароль напрямую; для обычного входа требуется отдельный флоу установки пароля.
+        - Метод обеспечивает единый вход/регистрацию через VK, сохраняя бизнес-инварианты (email обязательный).
+        - Логирование debug уровня фиксирует этапы поиска и привязки аккаунта, но не содержит чувствительные токены VK.
         """
 
         # Получаем user_info
@@ -322,12 +275,14 @@ class VKOAuthService:
         email = user_info.get("email")
 
         if not email:
-            # raise VkEmailMissing()
             # TODO Hardcode email!!!
             hash_digest = hashlib.sha256(vk_id.encode()).hexdigest()[
                 :12
             ]  # первые 12 символов
             email = f"user_{hash_digest}@temp.local"
+
+        # TODO Hardcode username
+        username = f"user_{uuid4().hex[:10]}"
 
         first_name = user_info.get("first_name")
         last_name = user_info.get("last_name")
@@ -357,24 +312,21 @@ class VKOAuthService:
             # Или получаем пользователя по емайл
             user = await user_crud.get_by_email(db=session, email=email)
 
-            # if user:
-            #     # Привязываем VK к существующему аккаунту
-            #     logger.debug("Привязываем VK к существующему аккаунту")
-            #     await AuthService.create_vk_oauth_account(
-            #         session=session,
-            #         user_id=user.id,
-            #         user_info=user_info,
-            #         access_token="None",
-            #         expires_at=999999999,
-            #         refresh_token="None",
-            #     )
+            if user:
+                # Привязываем VK к существующему аккаунту
+                logger.debug("Привязываем VK к существующему аккаунту")
+                await VKOAuthService.create_vk_oauth_account(
+                    session=session,
+                    user_id=user.id,
+                    user_info=user_info,
+                )
 
         if not user:
             # Если пользователя нет, то регистрируем
 
             user = User(
                 email=email,
-                username="test",
+                username=username,
                 hashed_password=hashed_password,
                 is_verified=True,  # ← сразу помечаем как подтвержденного
             )
@@ -388,7 +340,12 @@ class VKOAuthService:
                 user_info=user_info,
             )
 
-        return user
+        access_token: str = create_access_token(
+            user_id=int(user.id),
+            username=user.username,
+            email=user.email,
+        )
+        return {"access_token": access_token}
 
 
     @staticmethod
@@ -407,7 +364,9 @@ class VKOAuthService:
         vk_id_token, res_obj = await VKOAuthService.get_vk_tokens(
             code=code, code_verifier=code_verifier, device_id=device_id
         )
+        logger.debug(f"{vk_id_token=}")
         token_data = res_obj.json()
+        logger.debug(f"{token_data=}")
         vk_access_token = token_data["access_token"]
         return vk_access_token
 
@@ -449,12 +408,12 @@ class VKOAuthService:
         user_id: int,
         user_info: dict,
     ):
-        logger.info("Получаем или создаем пользователя VK.")
+        logger.debug("Получаем или создаем пользователя VK.")
         vk_id = user_info.get("user_id")
         email = user_info.get("email")
-        logger.info(f"user_info: {user_info}")
-        logger.info(f"Получаем или создаем пользователя VK с vk_id: {vk_id}")
-        logger.info(f"Получаем или создаем пользователя VK с email: {email}")
+        logger.debug(f"user_info: {user_info}")
+        logger.debug(f"Получаем или создаем пользователя VK с vk_id: {vk_id}")
+        logger.debug(f"Получаем или создаем пользователя VK с email: {email}")
 
         # Создание экземпляра Pydantic-модели OAuthAccountCreate
         oauth_data = OAuthAccountCreate(
@@ -463,10 +422,8 @@ class VKOAuthService:
             user_id=user_id,
             account_email=email,
         )
-        logger.info(f"Аккаунт OAuth VK успешно создан: {oauth_data}")
-
         # Передаём Pydantic-модель в метод create репозитория
         oauth_account = await OAuthAccountRepository.create(
             db=session, obj_in=oauth_data
         )
-        logger.info(f"Аккаунт OAuth VK успешно создан: {oauth_account}")
+        logger.debug(f"Аккаунт OAuth VK успешно создан: {oauth_account}")
