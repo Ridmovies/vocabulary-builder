@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import
 
 from pydantic import BaseModel, Field
 
@@ -30,6 +30,12 @@ class WordRead(WordBase):
         examples=["1"]
     )
     categories: list[CategoryRead] | None = None
+
+    image_url: str | None = Field(
+        None,
+        description="URL изображения слова",
+        examples=["https://medium.com"]
+    )
 
 
 class WordCreate(WordBase):

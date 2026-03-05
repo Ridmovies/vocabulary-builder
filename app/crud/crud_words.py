@@ -169,5 +169,27 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
 
         return word
 
+    async def update_image(
+            self,
+            db: AsyncSession,
+            word_id: int,
+            image_url: str
+    ):
+        stmt = select(Word).where(Word.id == word_id)
+        result = await db.execute(stmt)
+        word = result.scalars().one_or_none()
+
+        if not word:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        word.image_url = image_url
+        await db.commit()
+
+        return word
+
+
+
 
 word_crud = CRUDWord(Word)

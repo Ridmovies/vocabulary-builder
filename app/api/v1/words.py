@@ -1,6 +1,6 @@
 from random import choice, sample, shuffle
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, UploadFile, File
 from starlette import status
 
 from app.api.deps import DBSession, UserDep
@@ -8,6 +8,7 @@ from app.crud.crud_words import word_crud
 from app.schemas.typing import TypingCheckRequest
 from app.schemas.words import WordCreate, WordRead, WordUpdate, WordQuiz
 from app.services.favorites import FavoriteService
+from app.services.image_storage_service import WordService
 from app.services.typing import TypingService
 
 router = APIRouter()
@@ -270,6 +271,31 @@ async def update_words(
     # Получаем слово
     word = await word_crud.get(db=session, id=word_id)
     return await word_crud.update_with_categories(db=session, obj_in=word_in, db_obj=word)
+
+
+@router.post(path="/{word_id}/image")
+async def post_image(
+        word_id: int,
+        session: DBSession,
+        current_user: UserDep,
+        image: UploadFile = File(...),
+):
+    return await WordService.upload_word_image(
+        db=session,
+        word_id=word_id,
+        image=image,
+        user_id=current_user.id
+    )
+
+
+@router.delete(path="/{word_id}/image")
+async def delete_image(
+        word_id: int,
+        session: DBSession,
+        current_user: UserDep,
+):
+    pass
+
 
 
 @router.post("/favorites/{word_id}")
