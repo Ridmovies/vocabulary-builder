@@ -62,5 +62,12 @@ class Settings(BaseSettings):
     VK_OAUTH_CLIENT_SECRET: SecretStr | None = None
     VK_OAUTH_REDIRECT_URI: str | None = None
 
+    # YANDEX CLOUD
+    YANDEX_CLOUD_ACCESS_KEY: SecretStr
+    YANDEX_CLOUD_SECRET_KEY: SecretStr
+    YANDEX_CLOUD_ENDPOINT: str = "https://storage.yandexcloud.net"
+    YANDEX_CLOUD_PUBLIC_BUCKET_NAME: str = "words-images"
+    YANDEX_PRESIGNED_URL_EXPIRES_SECONDS: int = 300
+
 
 settings = Settings()

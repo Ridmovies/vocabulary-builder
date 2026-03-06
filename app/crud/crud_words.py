@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from fastapi import HTTPException
-from sqlalchemy import select, or_, and_
+from sqlalchemy import select, or_, and_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from starlette import status
@@ -175,21 +175,14 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
             word_id: int,
             image_url: str
     ):
-        stmt = select(Word).where(Word.id == word_id)
+        stmt = (
+            update(Word)
+            .where(Word.id == word_id)
+            .values(image_url=image_url)
+            .returning(Word)
+        )
         result = await db.execute(stmt)
-        word = result.scalars().one_or_none()
-
-        if not word:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-            )
-
-        word.image_url = image_url
-        await db.commit()
-
-        return word
-
-
+        return result.scalar_one()
 
 
 word_crud = CRUDWord(Word)

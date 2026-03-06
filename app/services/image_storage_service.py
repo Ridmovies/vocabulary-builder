@@ -1,9 +1,10 @@
 from uuid import uuid4
 
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.crud_words import word_crud
+from app.services.stotage import yandex_storage
 
 
 class WordService:
@@ -15,24 +16,31 @@ class WordService:
         image: UploadFile,
         user_id: int,
     ):
-        # 1. проверка типа
+        # 1. Проверка типа файла
         if image.content_type not in ["image/jpeg", "image/png", "image/webp"]:
-            raise ValueError("Invalid image type")
+            raise HTTPException(status_code=400, detail="Invalid image type")
 
-        # 2. генерация имени
-        filename = f"{uuid4()}.jpg"
+        # 2. Чтение содержимого файла
+        content = await image.read()
 
-        # # 3. загрузка в CDN
-        # url = await image_storage_service.upload_file(
-        #     file=image,
-        #     path=f"words/{filename}"
-        # )
+        # 3. Генерация уникального имени
+        ext = image.filename.split(".")[-1].lower()
+        key = f"words/{uuid4()}.{ext}"
 
-        image_url = "https://medium.com" + "/" + filename
-
-        # 4. обновление слова
-        return await word_crud.update_image(
-            db=db,
-            word_id=word_id,
-            image_url=image_url,
+        # 4. Загрузка в YandexStorage
+        await yandex_storage.upload_file(
+            key=key,
+            content=content,
+            content_type=image.content_type,
+            private=False
         )
+
+        # 5. Получение публичного URL
+        url = yandex_storage.get_public_url(key)
+
+        word = await word_crud.update_image(
+            word_id=word_id,
+            db=db,
+            image_url=url,
+        )
+        return word
