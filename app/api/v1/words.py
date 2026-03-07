@@ -273,7 +273,10 @@ async def update_words(
     return await word_crud.update_with_categories(db=session, obj_in=word_in, db_obj=word)
 
 
-@router.post(path="/{word_id}/image")
+@router.post(
+    path="/{word_id}/image",
+    response_model=WordRead,
+)
 async def post_image(
         word_id: int,
         session: DBSession,

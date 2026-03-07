@@ -34,7 +34,7 @@ class WordRead(WordBase):
     image_url: str | None = Field(
         None,
         description="URL изображения слова",
-        examples=["https://medium.com"]
+        examples=["https://storage.yandexcloud.net/words-images/words/51fb1e38-aeb4-4fa4-8833-200178ff4354.jpg"]
     )
 
 
