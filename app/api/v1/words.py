@@ -140,7 +140,7 @@ async def check_quiz_answer(
     word = await word_crud.get_for_user(
         db=session,
         user_id=current_user.id,
-        id=answer_in.id
+        word_id=answer_in.id
     )
     # Приводим слова к одному регистру
     user_answer = answer_in.russian.strip().lower()
@@ -294,7 +294,11 @@ async def delete_image(
         session: DBSession,
         current_user: UserDep,
 ):
-    pass
+    return await WordService.delete_word_image(
+        db=session,
+        word_id=word_id,
+        user_id=current_user.id
+    )
 
 
 

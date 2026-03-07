@@ -3,8 +3,9 @@ from uuid import uuid4
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.logger import logger
 from app.crud.crud_words import word_crud
-from app.services.stotage import yandex_storage
+from app.services.stotage import yandex_storage, YandexStorage
 
 
 class WordService:
@@ -16,6 +17,13 @@ class WordService:
         image: UploadFile,
         user_id: int,
     ):
+        # сначала проверка прав
+        await word_crud.get_for_user(
+            db=db,
+            word_id=word_id,
+            user_id=user_id,
+        )
+
         # 1. Проверка типа файла
         if image.content_type not in ["image/jpeg", "image/png", "image/webp"]:
             raise HTTPException(status_code=400, detail="Invalid image type")
@@ -43,4 +51,39 @@ class WordService:
             db=db,
             image_url=url,
         )
+        await db.commit()
         return word
+
+    @staticmethod
+    async def delete_word_image(
+        db: AsyncSession,
+        word_id: int,
+        user_id: int,
+    ):
+
+        # сначала проверка прав
+        word = await word_crud.get_for_user(
+            db=db,
+            word_id=word_id,
+            user_id=user_id,
+        )
+
+        logger.debug(f"{word.image_url=}")
+
+        if word.image_url:
+
+            key = YandexStorage.extract_key(url=word.image_url)
+            logger.debug(f"{key=}")
+
+            await yandex_storage.delete_file(
+                key=key,
+                private=False
+            )
+
+        word.image_url = None
+        await db.commit()
+
+        return word
+
+
+

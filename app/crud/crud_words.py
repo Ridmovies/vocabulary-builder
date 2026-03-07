@@ -138,7 +138,7 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
     async def get_for_user(
             self,
             db: AsyncSession,
-            id: int,
+            word_id: int,
             user_id: int
     ):
         """
@@ -155,7 +155,7 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
         без дополнительной логики на уровне API.
         """
         stmt = select(Word).where(
-            Word.id == id,
+            Word.id == word_id,
             or_(Word.owner_id == user_id, Word.owner_id.is_(None))
         )
         result = await db.execute(stmt)
