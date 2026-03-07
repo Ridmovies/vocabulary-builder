@@ -1,52 +1,52 @@
-{
-  "category": {
-    "name": "Phrasal Verbs",
-    "description": "Самые употребляемые фразовые глаголы",
-    "owner_id": null
-  },
-  "words": [
-    { "english": "look after", "russian": "присматривать, заботиться" },
-    { "english": "give up", "russian": "сдаваться, бросать" },
-    { "english": "get up", "russian": "вставать, просыпаться" },
-    { "english": "go out", "russian": "выходить (гулять)" },
-    { "english": "come back", "russian": "возвращаться" },
-    { "english": "take off", "russian": "снимать (одежду), взлетать (о самолёте)" },
-    { "english": "put on", "russian": "надевать" },
-    { "english": "turn on", "russian": "включать" },
-    { "english": "turn off", "russian": "выключать" },
-    { "english": "pick up", "russian": "подбирать, забирать" },
-
-    { "english": "look for", "russian": "искать" },
-    { "english": "find out", "russian": "выяснять, узнавать" },
-    { "english": "get along", "russian": "ладить, хорошо общаться" },
-    { "english": "run out of", "russian": "заканчиваться (о запасах)" },
-    { "english": "set up", "russian": "организовывать, настраивать" },
-    { "english": "wake up", "russian": "просыпаться, будить" },
-    { "english": "hang out", "russian": "проводить время, тусоваться" },
-    { "english": "carry on", "russian": "продолжать" },
-    { "english": "break down", "russian": "ломаться, срываться" },
-    { "english": "bring up", "russian": "воспитывать, поднимать тему" },
-
-    { "english": "come across", "russian": "случайно натолкнуться" },
-    { "english": "look forward to", "russian": "ждать с нетерпением" },
-    { "english": "give back", "russian": "возвращать" },
-    { "english": "take care of", "russian": "заботиться о" },
-    { "english": "get over", "russian": "оправиться, пережить" },
-    { "english": "check out", "russian": "проверять, осматривать" },
-    { "english": "fill out", "russian": "заполнять (форму)" },
-    { "english": "make up", "russian": "выдумывать, мириться" },
-    { "english": "put off", "russian": "откладывать" },
-    { "english": "work out", "russian": "получаться, тренироваться" },
-
-    { "english": "show up", "russian": "появляться" },
-    { "english": "turn up", "russian": "прибавлять (громкость), появляться" },
-    { "english": "turn down", "russian": "убавлять, отказывать" },
-    { "english": "get in", "russian": "входить, прибывать" },
-    { "english": "get out", "russian": "выходить, выбираться" },
-    { "english": "look out", "russian": "остерегаться" },
-    { "english": "call back", "russian": "перезванивать" },
-    { "english": "throw away", "russian": "выбрасывать" },
-    { "english": "come up with", "russian": "придумать" },
-    { "english": "pass away", "russian": "скончаться (эвфемизм)" }
-  ]
-}
+//{
+//  "category": {
+//    "name": "Phrasal Verbs",
+//    "description": "Самые употребляемые фразовые глаголы",
+//    "owner_id": null
+//  },
+//  "words": [
+//    { "english": "look after", "russian": "присматривать, заботиться" },
+//    { "english": "give up", "russian": "сдаваться, бросать" },
+//    { "english": "get up", "russian": "вставать, просыпаться" },
+//    { "english": "go out", "russian": "выходить (гулять)" },
+//    { "english": "come back", "russian": "возвращаться" },
+//    { "english": "take off", "russian": "снимать (одежду), взлетать (о самолёте)" },
+//    { "english": "put on", "russian": "надевать" },
+//    { "english": "turn on", "russian": "включать" },
+//    { "english": "turn off", "russian": "выключать" },
+//    { "english": "pick up", "russian": "подбирать, забирать" },
+//
+//    { "english": "look for", "russian": "искать" },
+//    { "english": "find out", "russian": "выяснять, узнавать" },
+//    { "english": "get along", "russian": "ладить, хорошо общаться" },
+//    { "english": "run out of", "russian": "заканчиваться (о запасах)" },
+//    { "english": "set up", "russian": "организовывать, настраивать" },
+//    { "english": "wake up", "russian": "просыпаться, будить" },
+//    { "english": "hang out", "russian": "проводить время, тусоваться" },
+//    { "english": "carry on", "russian": "продолжать" },
+//    { "english": "break down", "russian": "ломаться, срываться" },
+//    { "english": "bring up", "russian": "воспитывать, поднимать тему" },
+//
+//    { "english": "come across", "russian": "случайно натолкнуться" },
+//    { "english": "look forward to", "russian": "ждать с нетерпением" },
+//    { "english": "give back", "russian": "возвращать" },
+//    { "english": "take care of", "russian": "заботиться о" },
+//    { "english": "get over", "russian": "оправиться, пережить" },
+//    { "english": "check out", "russian": "проверять, осматривать" },
+//    { "english": "fill out", "russian": "заполнять (форму)" },
+//    { "english": "make up", "russian": "выдумывать, мириться" },
+//    { "english": "put off", "russian": "откладывать" },
+//    { "english": "work out", "russian": "получаться, тренироваться" },
+//
+//    { "english": "show up", "russian": "появляться" },
+//    { "english": "turn up", "russian": "прибавлять (громкость), появляться" },
+//    { "english": "turn down", "russian": "убавлять, отказывать" },
+//    { "english": "get in", "russian": "входить, прибывать" },
+//    { "english": "get out", "russian": "выходить, выбираться" },
+//    { "english": "look out", "russian": "остерегаться" },
+//    { "english": "call back", "russian": "перезванивать" },
+//    { "english": "throw away", "russian": "выбрасывать" },
+//    { "english": "come up with", "russian": "придумать" },
+//    { "english": "pass away", "russian": "скончаться (эвфемизм)" }
+//  ]
+//}

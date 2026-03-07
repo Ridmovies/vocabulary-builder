@@ -1,52 +1,52 @@
-{
-  "category": {
-    "name": "Popular English Phrases",
-    "description": "Самые употребляемые английские фразы",
-    "owner_id": null
-  },
-  "words": [
-    { "english": "Hello!", "russian": "Привет!" },
-    { "english": "Hi!", "russian": "Привет!" },
-    { "english": "How are you?", "russian": "Как дела?" },
-    { "english": "I'm fine, thanks.", "russian": "Хорошо, спасибо" },
-    { "english": "And you?", "russian": "А ты?" },
-    { "english": "Nice to meet you.", "russian": "Приятно познакомиться" },
-    { "english": "What's your name?", "russian": "Как тебя зовут?" },
-    { "english": "My name is…", "russian": "Меня зовут…" },
-    { "english": "Where are you from?", "russian": "Откуда ты?" },
-    { "english": "I'm from…", "russian": "Я из…" },
-
-    { "english": "Thank you.", "russian": "Спасибо" },
-    { "english": "Thanks a lot.", "russian": "Большое спасибо" },
-    { "english": "You're welcome.", "russian": "Пожалуйста (в ответ)" },
-    { "english": "Please.", "russian": "Пожалуйста (просьба)" },
-    { "english": "Excuse me.", "russian": "Извините (привлечь внимание)" },
-    { "english": "Sorry.", "russian": "Извини / прости" },
-    { "english": "No problem.", "russian": "Без проблем" },
-    { "english": "That's OK.", "russian": "Всё в порядке" },
-    { "english": "Of course.", "russian": "Конечно" },
-    { "english": "Sure.", "russian": "Конечно / без проблем" },
-
-    { "english": "I don't understand.", "russian": "Я не понимаю" },
-    { "english": "Can you help me?", "russian": "Ты можешь мне помочь?" },
-    { "english": "Can you repeat, please?", "russian": "Повтори, пожалуйста" },
-    { "english": "What does it mean?", "russian": "Что это значит?" },
-    { "english": "How much is it?", "russian": "Сколько это стоит?" },
-    { "english": "What time is it?", "russian": "Который час?" },
-    { "english": "Where is the toilet?", "russian": "Где туалет?" },
-    { "english": "I agree.", "russian": "Я согласен" },
-    { "english": "I don't agree.", "russian": "Я не согласен" },
-    { "english": "I think so.", "russian": "Я так думаю" },
-
-    { "english": "Maybe.", "russian": "Может быть" },
-    { "english": "I don't know.", "russian": "Я не знаю" },
-    { "english": "It depends.", "russian": "Зависит от ситуации" },
-    { "english": "What do you mean?", "russian": "Что ты имеешь в виду?" },
-    { "english": "What's going on?", "russian": "Что происходит?" },
-    { "english": "What's up?", "russian": "Как дела? / Что нового?" },
-    { "english": "See you later.", "russian": "Увидимся позже" },
-    { "english": "See you soon.", "russian": "До скорого" },
-    { "english": "Good luck!", "russian": "Удачи!" },
-    { "english": "Take care!", "russian": "Береги себя!" }
-  ]
-}
+//{
+//  "category": {
+//    "name": "Popular English Phrases",
+//    "description": "Самые употребляемые английские фразы",
+//    "owner_id": null
+//  },
+//  "words": [
+//    { "english": "Hello!", "russian": "Привет!" },
+//    { "english": "Hi!", "russian": "Привет!" },
+//    { "english": "How are you?", "russian": "Как дела?" },
+//    { "english": "I'm fine, thanks.", "russian": "Хорошо, спасибо" },
+//    { "english": "And you?", "russian": "А ты?" },
+//    { "english": "Nice to meet you.", "russian": "Приятно познакомиться" },
+//    { "english": "What's your name?", "russian": "Как тебя зовут?" },
+//    { "english": "My name is…", "russian": "Меня зовут…" },
+//    { "english": "Where are you from?", "russian": "Откуда ты?" },
+//    { "english": "I'm from…", "russian": "Я из…" },
+//
+//    { "english": "Thank you.", "russian": "Спасибо" },
+//    { "english": "Thanks a lot.", "russian": "Большое спасибо" },
+//    { "english": "You're welcome.", "russian": "Пожалуйста (в ответ)" },
+//    { "english": "Please.", "russian": "Пожалуйста (просьба)" },
+//    { "english": "Excuse me.", "russian": "Извините (привлечь внимание)" },
+//    { "english": "Sorry.", "russian": "Извини / прости" },
+//    { "english": "No problem.", "russian": "Без проблем" },
+//    { "english": "That's OK.", "russian": "Всё в порядке" },
+//    { "english": "Of course.", "russian": "Конечно" },
+//    { "english": "Sure.", "russian": "Конечно / без проблем" },
+//
+//    { "english": "I don't understand.", "russian": "Я не понимаю" },
+//    { "english": "Can you help me?", "russian": "Ты можешь мне помочь?" },
+//    { "english": "Can you repeat, please?", "russian": "Повтори, пожалуйста" },
+//    { "english": "What does it mean?", "russian": "Что это значит?" },
+//    { "english": "How much is it?", "russian": "Сколько это стоит?" },
+//    { "english": "What time is it?", "russian": "Который час?" },
+//    { "english": "Where is the toilet?", "russian": "Где туалет?" },
+//    { "english": "I agree.", "russian": "Я согласен" },
+//    { "english": "I don't agree.", "russian": "Я не согласен" },
+//    { "english": "I think so.", "russian": "Я так думаю" },
+//
+//    { "english": "Maybe.", "russian": "Может быть" },
+//    { "english": "I don't know.", "russian": "Я не знаю" },
+//    { "english": "It depends.", "russian": "Зависит от ситуации" },
+//    { "english": "What do you mean?", "russian": "Что ты имеешь в виду?" },
+//    { "english": "What's going on?", "russian": "Что происходит?" },
+//    { "english": "What's up?", "russian": "Как дела? / Что нового?" },
+//    { "english": "See you later.", "russian": "Увидимся позже" },
+//    { "english": "See you soon.", "russian": "До скорого" },
+//    { "english": "Good luck!", "russian": "Удачи!" },
+//    { "english": "Take care!", "russian": "Береги себя!" }
+//  ]
+//}

@@ -1,20 +1,20 @@
-{
-  "category": {
-    "name": "Quick Translation",
-    "description": "Фразы для устного перевода",
-    "owner_id": null
-  },
-  "words": [
-    { "english": "Hello!", "russian": "Он вышел на улицу (go outside)" },
-    { "english": "Hi!", "russian": "Привет!" },
-    { "english": "How are you?", "russian": "Как дела?" },
-    { "english": "I'm fine, thanks.", "russian": "Хорошо, спасибо" },
-    { "english": "And you?", "russian": "А ты?" },
-    { "english": "Nice to meet you.", "russian": "Приятно познакомиться" },
-    { "english": "What's your name?", "russian": "Как тебя зовут?" },
-    { "english": "My name is…", "russian": "Меня зовут…" },
-    { "english": "Where are you from?", "russian": "Откуда ты?" },
-    { "english": "I'm from…", "russian": "Я из…" },
-
-  ]
-}
+//{
+//  "category": {
+//    "name": "Quick Translation",
+//    "description": "Фразы для устного перевода",
+//    "owner_id": null
+//  },
+//  "words": [
+//    { "english": "Hello!", "russian": "Он вышел на улицу (go outside)" },
+//    { "english": "Hi!", "russian": "Привет!" },
+//    { "english": "How are you?", "russian": "Как дела?" },
+//    { "english": "I'm fine, thanks.", "russian": "Хорошо, спасибо" },
+//    { "english": "And you?", "russian": "А ты?" },
+//    { "english": "Nice to meet you.", "russian": "Приятно познакомиться" },
+//    { "english": "What's your name?", "russian": "Как тебя зовут?" },
+//    { "english": "My name is…", "russian": "Меня зовут…" },
+//    { "english": "Where are you from?", "russian": "Откуда ты?" },
+//    { "english": "I'm from…", "russian": "Я из…" },
+//
+//  ]
+//}
