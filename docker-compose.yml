@@ -22,8 +22,9 @@ services:
     # 2. Запускаем сервер FastAPI через Uvicorn
     command: >
       sh -c "alembic upgrade head &&
-      python -m app.core.seed.run &&
       uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+    #      python -m app.core.seed.run &&
     # Проброс портов: хост:контейнер
     ports:
       - "8000:8000"  # Внешний порт 8000 → внутренний 8000 контейнера
