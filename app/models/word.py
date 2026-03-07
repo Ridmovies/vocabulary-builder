@@ -36,6 +36,12 @@ class Word(Base):
         comment="Перевод на русский язык"
     )
 
+    image_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+        comment="URL изображения слова"
+    )
+
     # Владелец слова
     owner_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),

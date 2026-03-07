@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from fastapi import HTTPException
-from sqlalchemy import select, or_, and_
+from sqlalchemy import select, or_, and_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from starlette import status
@@ -138,7 +138,7 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
     async def get_for_user(
             self,
             db: AsyncSession,
-            id: int,
+            word_id: int,
             user_id: int
     ):
         """
@@ -155,7 +155,7 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
         без дополнительной логики на уровне API.
         """
         stmt = select(Word).where(
-            Word.id == id,
+            Word.id == word_id,
             or_(Word.owner_id == user_id, Word.owner_id.is_(None))
         )
         result = await db.execute(stmt)
@@ -168,6 +168,21 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
             )
 
         return word
+
+    async def update_image(
+            self,
+            db: AsyncSession,
+            word_id: int,
+            image_url: str
+    ):
+        stmt = (
+            update(Word)
+            .where(Word.id == word_id)
+            .values(image_url=image_url)
+            .returning(Word)
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one()
 
 
 word_crud = CRUDWord(Word)

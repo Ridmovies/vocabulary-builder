@@ -91,11 +91,30 @@
         </div>
     </div>
 </div>
+
+<!-- Модальное окно для просмотра изображения (опционально) -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <i class="bi bi-image me-2"></i>
+                    Изображение
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" alt="Изображение слова" class="img-fluid" id="modalImage">
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
     let currentWordId = null;
+    let currentWordData = null; // Сохраняем полные данные слова
     let selectedCategoryId = null;
     let favoriteOnly = false;
 
@@ -161,9 +180,31 @@
 
             const word = await response.json();
             currentWordId = word.id;
+            currentWordData = word; // Сохраняем данные для использования в модальном окне
 
             const container = document.getElementById('exercise-container');
+
+            // Строим HTML с учетом наличия изображения
+            let imageHtml = '';
+            if (word.image_url) {
+                imageHtml = `
+                    <div class="text-center mb-4">
+                        <img src="${word.image_url}"
+                             alt="Изображение для слова ${word.english}"
+                             class="img-fluid rounded shadow-sm"
+                             style="max-height: 300px; cursor: pointer;"
+                             onclick="openImageModal('${word.image_url}')"
+                             title="Нажмите для увеличения">
+                        <p class="text-muted small mt-2">
+                            <i class="bi bi-image me-1"></i>
+                            Нажмите на изображение для увеличения
+                        </p>
+                    </div>
+                `;
+            }
+
             container.innerHTML = `
+                ${imageHtml}
                 <div class="mb-3">
                     <h4>Переведите на английский:</h4>
                     <p class="display-6 text-primary">${word.russian}</p>
@@ -182,6 +223,18 @@
         } catch (error) {
             console.error('Ошибка:', error);
             showFeedback('Ошибка загрузки слова. Попробуйте снова.', 'danger');
+
+            // Показываем сообщение об ошибке в контейнере
+            const container = document.getElementById('exercise-container');
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Не удалось загрузить слово.
+                    <button class="btn btn-sm btn-outline-danger ms-3" onclick="loadRandomWord()">
+                        Попробовать снова
+                    </button>
+                </div>
+            `;
         }
     }
 
@@ -256,6 +309,40 @@
         feedback.style.display = 'none';
     }
 
+    // Функция для открытия модального окна с изображением
+    function openImageModal(imageUrl) {
+        const modalImage = document.getElementById('modalImage');
+        modalImage.src = imageUrl;
+
+        const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+        modal.show();
+    }
+
+    // Функция для сброса статистики
+    function resetStats() {
+        stats = {
+            correct: 0,
+            incorrect: 0,
+            total: 0
+        };
+
+        document.getElementById('correct-count').textContent = '0';
+        document.getElementById('incorrect-count').textContent = '0';
+        document.getElementById('total-count').textContent = '0';
+
+        showFeedback('Статистика сброшена', 'info');
+    }
+
+    // Добавляем обработчик для клавиши Escape для закрытия модального окна
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('imageModal'));
+            if (modal) {
+                modal.hide();
+            }
+        }
+    });
+
     // Обработчики событий
     document.getElementById('check-btn').addEventListener('click', checkAnswer);
 
@@ -269,7 +356,26 @@
         selectedCategoryId = document.getElementById('category-select').value || null;
         favoriteOnly = document.getElementById('favorite-checkbox').checked;
         loadRandomWord();
+        // Сбрасываем статистику при смене фильтров (опционально)
+        // resetStats();
     });
+
+    // Добавляем кнопку для ручной загрузки следующего слова (опционально)
+    const nextButton = document.createElement('button');
+    nextButton.className = 'btn btn-outline-primary mt-2';
+    nextButton.innerHTML = '<i class="bi bi-skip-forward me-2"></i>Следующее слово';
+    nextButton.onclick = () => loadRandomWord();
+    nextButton.style.width = '100%';
+
+    // Добавляем кнопку после контейнера с упражнением
+    document.querySelector('.card-body').appendChild(nextButton);
+
+    // Добавляем кнопку сброса статистики
+    const resetStatsBtn = document.createElement('button');
+    resetStatsBtn.className = 'btn btn-sm btn-outline-secondary mt-3';
+    resetStatsBtn.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i>Сбросить статистику';
+    resetStatsBtn.onclick = resetStats;
+    document.querySelector('.card:last-child .card-body').appendChild(resetStatsBtn);
 
     // Инициализация при загрузке страницы
     document.addEventListener('DOMContentLoaded', async () => {
@@ -283,4 +389,52 @@
         document.getElementById('answer-input').focus();
     });
 </script>
+
+<style>
+/* Стили для изображения */
+#exercise-container img {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 3px solid transparent;
+}
+
+#exercise-container img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
+    border-color: var(--bs-primary);
+}
+
+/* Анимация для правильного/неправильного ответа */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.is-invalid {
+    animation: shake 0.3s ease-in-out;
+}
+
+/* Стили для модального окна */
+#imageModal .modal-body {
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+#imageModal img {
+    max-height: 80vh;
+    width: auto;
+    margin: 0 auto;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    #exercise-container img {
+        max-height: 200px !important;
+    }
+
+    .display-6 {
+        font-size: 1.75rem;
+    }
+}
+</style>
 {% endblock %}
