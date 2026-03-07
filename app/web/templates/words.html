@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container py-4">
-    <!-- Заголовок и кнопка добавления -->
+    <!-- Заголовок и кнопка добавления (без изменений) -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h2 mb-1">Мои слова</h1>
@@ -16,7 +16,7 @@
         </a>
     </div>
 
-    <!-- Фильтры -->
+    <!-- Фильтры (без изменений) -->
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-header bg-light">
             <h5 class="mb-0">
@@ -87,7 +87,7 @@
         </div>
     </div>
 
-    <!-- Статистика -->
+    <!-- Статистика (без изменений) -->
     <div class="row mb-4" id="wordsStats" style="display: none;">
         <div class="col-md-4">
             <div class="card border-0 bg-primary bg-opacity-10">
@@ -167,7 +167,7 @@
     </div>
 </div>
 
-<!-- Модальное окно удаления -->
+<!-- Модальное окно удаления слова (без изменений) -->
 <div class="modal fade" id="deleteWordModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -192,6 +192,76 @@
         </div>
     </div>
 </div>
+
+<!-- НОВОЕ: Модальное окно для загрузки изображения -->
+<div class="modal fade" id="uploadImageModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">
+                    <i class="bi bi-image me-2"></i>
+                    Загрузка изображения
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="uploadImageForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="text-center mb-3" id="currentImagePreview" style="display: none;">
+                        <img src="" alt="Текущее изображение" class="img-fluid rounded" style="max-height: 200px;">
+                        <p class="small text-muted mt-2">Текущее изображение</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="wordImage" class="form-label fw-bold">Выберите изображение</label>
+                        <input class="form-control" type="file" id="wordImage" name="image" accept="image/*" required>
+                        <div class="form-text">
+                            Максимальный размер: 10 MB. Поддерживаемые форматы: JPG, PNG, GIF, WEBP
+                        </div>
+                    </div>
+
+                    <div id="imageUploadProgress" class="progress" style="height: 10px; display: none;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary" id="uploadImageBtn">
+                        <span class="upload-text">Загрузить</span>
+                        <span class="spinner-border spinner-border-sm d-none"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- НОВОЕ: Модальное окно для подтверждения удаления изображения -->
+<div class="modal fade" id="deleteImageModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Удаление изображения
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить изображение для слова:</p>
+                <p class="mb-0"><strong id="deleteImageWordEnglish"></strong> - <span id="deleteImageWordRussian"></span></p>
+                <p class="text-muted small mt-3">Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-warning" id="confirmDeleteImageBtn">
+                    <span class="delete-image-text">Удалить изображение</span>
+                    <span class="spinner-border spinner-border-sm d-none"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -203,6 +273,7 @@ let totalWords = 0;
 let allCategories = [];
 let selectedCategoryIds = [];
 let wordToDelete = null;
+let wordForImage = null;  // НОВОЕ: для операций с изображениями
 let favoriteOnly = false;
 
 // Инициализация
@@ -251,11 +322,17 @@ function setupEventListeners() {
         loadWords();
     });
 
-    // Подтверждение удаления
+    // Подтверждение удаления слова
     document.getElementById('confirmDeleteBtn').addEventListener('click', deleteWord);
+
+    // НОВОЕ: Обработка загрузки изображения
+    document.getElementById('uploadImageForm').addEventListener('submit', uploadImage);
+
+    // НОВОЕ: Подтверждение удаления изображения
+    document.getElementById('confirmDeleteImageBtn').addEventListener('click', deleteImage);
 }
 
-// Загрузка категорий
+// Загрузка категорий (без изменений)
 async function loadCategories() {
     try {
         // Используем scope=mine для получения только пользовательских категорий
@@ -276,7 +353,7 @@ async function loadCategories() {
     }
 }
 
-// Отрисовка фильтра категорий
+// Отрисовка фильтра категорий (без изменений)
 function renderCategoriesFilter() {
     const container = document.getElementById('categoriesFilter');
 
@@ -313,7 +390,7 @@ function renderCategoriesFilter() {
     });
 }
 
-// Переключение категории
+// Переключение категории (без изменений)
 function toggleCategory(categoryId) {
     const index = selectedCategoryIds.indexOf(categoryId);
 
@@ -326,7 +403,7 @@ function toggleCategory(categoryId) {
     updateCategoriesFilter();
 }
 
-// Обновление отображения фильтра
+// Обновление отображения фильтра (без изменений)
 function updateCategoriesFilter() {
     const tags = document.querySelectorAll('#categoriesFilter .category-tag');
 
@@ -342,7 +419,7 @@ function updateCategoriesFilter() {
     });
 }
 
-// Загрузка слов
+// Загрузка слов (без изменений)
 async function loadWords() {
     const limit = parseInt(document.getElementById('limitSelect').value);
     const skip = (currentPage - 1) * limit;
@@ -402,7 +479,7 @@ async function loadWords() {
     }
 }
 
-// Отрисовка списка слов
+// Отрисовка списка слов (ОБНОВЛЕНО: добавлены кнопки для изображений)
 function renderWords(words) {
     const container = document.getElementById('wordsList');
 
@@ -426,13 +503,17 @@ function renderWords(words) {
             : '<span class="badge bg-light text-muted">Без категории</span>';
 
         // Проверяем, есть ли слово в избранном
-        // Если API не возвращает is_favorite, можно сделать дополнительный запрос
-        // или отслеживать локально. Покажем кнопку в любом случае.
         const favoriteIcon = word.is_favorite
             ? '<i class="bi bi-star-fill text-warning"></i>'
             : '<i class="bi bi-star"></i>';
 
         const createdAt = new Date(word.created_at).toLocaleDateString('ru-RU');
+
+        // НОВОЕ: Определяем, есть ли изображение
+        const hasImage = word.image_url && word.image_url.trim() !== '';
+        const imageIcon = hasImage
+            ? '<i class="bi bi-image-fill text-success"></i>'
+            : '<i class="bi bi-image text-muted"></i>';
 
         html += `
         <div class="list-group-item border-0 ${index % 2 === 0 ? 'bg-light bg-opacity-50' : ''}">
@@ -440,30 +521,52 @@ function renderWords(words) {
                 <div class="col-md-4">
                     <div class="d-flex align-items-center">
                         <button class="btn btn-sm btn-link text-warning p-0 me-2"
-                                onclick="toggleFavorite(${word.id})"
+                                onclick="toggleFavorite(${word.id}, ${word.is_favorite})"
                                 id="favoriteBtn-${word.id}">
                             ${favoriteIcon}
                         </button>
-                        <div>
-                            <h6 class="mb-0">${word.english}</h6>
-                            <small class="text-muted">${word.russian}</small>
+                        <div class="d-flex align-items-center">
+                            <div class="me-2">
+                                ${imageIcon}
+                            </div>
+                            <div>
+                                <h6 class="mb-0">${word.english}</h6>
+                                <small class="text-muted">${word.russian}</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="small">${categoriesHtml}</div>
                 </div>
                 <div class="col-md-2">
-                    <small class="text-muted">Добавлено: ${createdAt}</small>
+                    <small class="text-muted">${createdAt}</small>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <div class="d-flex gap-1 justify-content-end">
+                        <!-- НОВЫЕ КНОПКИ: Изображения -->
+                        <button class="btn btn-sm btn-outline-success"
+                                onclick="showUploadImageModal(${word.id}, '${word.english}', '${word.russian}', '${word.image_url || ''}')"
+                                title="${hasImage ? 'Изменить изображение' : 'Загрузить изображение'}">
+                            <i class="bi bi-image"></i>
+                        </button>
+
+                        ${hasImage ? `
+                        <button class="btn btn-sm btn-outline-warning"
+                                onclick="showDeleteImageModal(${word.id}, '${word.english}', '${word.russian}')"
+                                title="Удалить изображение">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        ` : ''}
+
                         <button class="btn btn-sm btn-outline-primary"
-                                onclick="editWord(${word.id})">
+                                onclick="editWord(${word.id})"
+                                title="Редактировать">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button class="btn btn-sm btn-outline-danger"
-                                onclick="prepareDeleteWord(${word.id}, '${word.english}', '${word.russian}')">
+                                onclick="prepareDeleteWord(${word.id}, '${word.english}', '${word.russian}')"
+                                title="Удалить слово">
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
@@ -478,7 +581,7 @@ function renderWords(words) {
     updateShowingText(words.length);
 }
 
-// Обновление статистики
+// Обновление статистики (без изменений)
 function updateStats(words) {
     document.getElementById('wordsStats').style.display = 'flex';
 
@@ -493,17 +596,13 @@ function updateStats(words) {
     document.getElementById('favoriteWordsCount').textContent = favoriteCount;
 }
 
-// Обновление текста "Показывается N слов"
+// Обновление текста "Показывается N слов" (без изменений)
 function updateShowingText(count) {
-    const limit = parseInt(document.getElementById('limitSelect').value);
-    const start = (currentPage - 1) * limit + 1;
-    const end = start + count - 1;
-
     document.getElementById('showingText').textContent =
         `Показывается ${count} слов`;
 }
 
-// Пагинация
+// Пагинация (без изменений)
 function updatePagination() {
     const container = document.getElementById('pagination');
     const limit = parseInt(document.getElementById('limitSelect').value);
@@ -558,7 +657,7 @@ function updatePagination() {
     container.innerHTML = html;
 }
 
-// Смена страницы
+// Смена страницы (без изменений)
 function changePage(newPage) {
     if (newPage < 1 || newPage > totalPages) return;
     currentPage = newPage;
@@ -568,11 +667,12 @@ function changePage(newPage) {
     document.querySelector('.container').scrollIntoView({ behavior: 'smooth' });
 }
 
-// Переключение избранного
-async function toggleFavorite(wordId, isFavorite) {
+// Переключение избранного (исправлено)
+async function toggleFavorite(wordId, currentIsFavorite) {
     try {
         const url = `/api/words/favorites/${wordId}`;
-        const method = isFavorite ? 'POST' : 'DELETE';
+        // Если слово уже в избранном, удаляем, если нет - добавляем
+        const method = currentIsFavorite ? 'DELETE' : 'POST';
 
         const response = await fetch(url, {
             method: method,
@@ -585,7 +685,7 @@ async function toggleFavorite(wordId, isFavorite) {
         if (response.ok) {
             // Перезагружаем список слов
             loadWords();
-            showToast(isFavorite ? 'Добавлено в избранное' : 'Удалено из избранного', 'success');
+            showToast(currentIsFavorite ? 'Удалено из избранного' : 'Добавлено в избранное', 'success');
         } else {
             showToast('Ошибка при изменении избранного', 'danger');
         }
@@ -595,7 +695,7 @@ async function toggleFavorite(wordId, isFavorite) {
     }
 }
 
-// Подготовка к удалению слова
+// Подготовка к удалению слова (без изменений)
 function prepareDeleteWord(wordId, english, russian) {
     wordToDelete = wordId;
     document.getElementById('deleteWordEnglish').textContent = english;
@@ -605,7 +705,7 @@ function prepareDeleteWord(wordId, english, russian) {
     modal.show();
 }
 
-// Удаление слова
+// Удаление слова (без изменений)
 async function deleteWord() {
     if (!wordToDelete) return;
 
@@ -651,12 +751,169 @@ async function deleteWord() {
     }
 }
 
-// Редактирование слова
+// НОВОЕ: Показать модальное окно загрузки изображения
+function showUploadImageModal(wordId, english, russian, currentImageUrl) {
+    wordForImage = { id: wordId, english, russian };
+
+    // Сброс формы
+    document.getElementById('uploadImageForm').reset();
+
+    // Показываем текущее изображение если есть
+    const previewContainer = document.getElementById('currentImagePreview');
+    if (currentImageUrl) {
+        const img = previewContainer.querySelector('img');
+        img.src = currentImageUrl;
+        previewContainer.style.display = 'block';
+    } else {
+        previewContainer.style.display = 'none';
+    }
+
+    // Скрываем прогресс
+    document.getElementById('imageUploadProgress').style.display = 'none';
+
+    const modal = new bootstrap.Modal(document.getElementById('uploadImageModal'));
+    modal.show();
+}
+
+// НОВОЕ: Загрузка изображения
+async function uploadImage(event) {
+    event.preventDefault();
+
+    if (!wordForImage) return;
+
+    const fileInput = document.getElementById('wordImage');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showToast('Выберите файл для загрузки', 'warning');
+        return;
+    }
+
+    const file = fileInput.files[0];
+
+    // Проверка размера файла (10 MB)
+    if (file.size > 10 * 1024 * 1024) {
+        showToast('Файл слишком большой. Максимальный размер: 10 MB', 'warning');
+        return;
+    }
+
+    const uploadBtn = document.getElementById('uploadImageBtn');
+    const spinner = uploadBtn.querySelector('.spinner-border');
+    const textSpan = uploadBtn.querySelector('.upload-text');
+    const progress = document.getElementById('imageUploadProgress');
+    const progressBar = progress.querySelector('.progress-bar');
+
+    // Показываем индикатор загрузки
+    spinner.classList.remove('d-none');
+    textSpan.classList.add('d-none');
+    uploadBtn.disabled = true;
+    progress.style.display = 'block';
+    progressBar.style.width = '0%';
+
+    try {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch(`/api/words/${wordForImage.id}/image`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            // Симулируем прогресс до 100%
+            progressBar.style.width = '100%';
+
+            showToast('Изображение успешно загружено', 'success');
+
+            // Закрываем модальное окно
+            const modal = bootstrap.Modal.getInstance(document.getElementById('uploadImageModal'));
+            modal.hide();
+
+            // Перезагружаем список слов
+            loadWords();
+
+        } else {
+            const result = await response.json();
+            showToast(result.detail || 'Ошибка при загрузке изображения', 'danger');
+        }
+
+    } catch (error) {
+        console.error('Ошибка сети:', error);
+        showToast('Ошибка сети при загрузке изображения', 'danger');
+    } finally {
+        // Скрываем индикатор загрузки
+        spinner.classList.add('d-none');
+        textSpan.classList.remove('d-none');
+        uploadBtn.disabled = false;
+        setTimeout(() => {
+            progress.style.display = 'none';
+        }, 1000);
+        wordForImage = null;
+    }
+}
+
+// НОВОЕ: Показать модальное окно удаления изображения
+function showDeleteImageModal(wordId, english, russian) {
+    wordForImage = { id: wordId, english, russian };
+
+    document.getElementById('deleteImageWordEnglish').textContent = english;
+    document.getElementById('deleteImageWordRussian').textContent = russian;
+
+    const modal = new bootstrap.Modal(document.getElementById('deleteImageModal'));
+    modal.show();
+}
+
+// НОВОЕ: Удаление изображения
+async function deleteImage() {
+    if (!wordForImage) return;
+
+    const deleteBtn = document.getElementById('confirmDeleteImageBtn');
+    const spinner = deleteBtn.querySelector('.spinner-border');
+    const textSpan = deleteBtn.querySelector('.delete-image-text');
+
+    // Показываем индикатор загрузки
+    spinner.classList.remove('d-none');
+    textSpan.classList.add('d-none');
+    deleteBtn.disabled = true;
+
+    try {
+        const response = await fetch(`/api/words/${wordForImage.id}/image`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            showToast('Изображение удалено', 'success');
+
+            // Закрываем модальное окно
+            const modal = bootstrap.Modal.getInstance(document.getElementById('deleteImageModal'));
+            modal.hide();
+
+            // Перезагружаем список слов
+            loadWords();
+
+        } else {
+            const result = await response.json();
+            showToast(result.detail || 'Ошибка при удалении изображения', 'danger');
+        }
+
+    } catch (error) {
+        console.error('Ошибка сети:', error);
+        showToast('Ошибка сети', 'danger');
+    } finally {
+        // Скрываем индикатор загрузки
+        spinner.classList.add('d-none');
+        textSpan.classList.remove('d-none');
+        deleteBtn.disabled = false;
+        wordForImage = null;
+    }
+}
+
+// Редактирование слова (без изменений)
 function editWord(wordId) {
     window.location.href = `/words/${wordId}/edit`;
 }
 
-// Показать toast-уведомление
+// Показать toast-уведомление (без изменений)
 function showToast(message, type = 'info') {
     // Создаем контейнер для тостов если его нет
     let toastContainer = document.getElementById('toast-container');
@@ -716,6 +973,18 @@ function showToast(message, type = 'info') {
 
 .list-group-item:nth-child(even) {
     background-color: rgba(0,0,0,0.02);
+}
+
+/* НОВЫЙ СТИЛЬ: Для превью изображения */
+#currentImagePreview img {
+    border: 2px solid #dee2e6;
+    padding: 3px;
+    background: white;
+}
+
+/* НОВЫЙ СТИЛЬ: Для индикации наличия изображения */
+.bi-image-fill {
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
 }
 
 /* Адаптивность */

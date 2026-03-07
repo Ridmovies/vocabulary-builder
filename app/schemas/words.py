@@ -31,6 +31,12 @@ class WordRead(WordBase):
     )
     categories: list[CategoryRead] | None = None
 
+    image_url: str | None = Field(
+        None,
+        description="URL изображения слова",
+        examples=["https://storage.yandexcloud.net/words-images/words/51fb1e38-aeb4-4fa4-8833-200178ff4354.jpg"]
+    )
+
 
 class WordCreate(WordBase):
     """Схема для создания слова с категориями."""
