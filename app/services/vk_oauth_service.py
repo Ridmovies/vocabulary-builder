@@ -248,7 +248,7 @@ class VKOAuthService:
         email = user_info.get("email")
 
         if not email:
-            # TODO Hardcode email!!!
+            # TODO Hardcode email!!! Email don't use in app. It's fine.
             hash_digest = hashlib.sha256(vk_id.encode()).hexdigest()[
                 :12
             ]  # первые 12 символов
@@ -257,12 +257,11 @@ class VKOAuthService:
         # TODO Hardcode username
         username = f"user_{uuid4().hex[:10]}"
 
-        first_name = user_info.get("first_name")
-        last_name = user_info.get("last_name")
-        birthday = user_info.get("birthday")
-        # TODO Доделать gender и avatar
-        gender = user_info.get("sex")
-        avatar = user_info.get("avatar")
+        # first_name = user_info.get("first_name")
+        # last_name = user_info.get("last_name")
+        # birthday = user_info.get("birthday")
+        # gender = user_info.get("sex")
+        # avatar = user_info.get("avatar")
 
         # Генерировать криптографически случайную строку, хешировать и сохранять.
         # Пользователь не знает этот пароль.
@@ -350,35 +349,35 @@ class VKOAuthService:
         return vk_access_token
 
 
-    @staticmethod
-    async def exchange_codes_for_vk_tokens(
-            session: DBSession,
-            code: str,
-            state: str,
-            device_id: str,
-    ):
-        """Финальный шаг: обмен кода на токены и вход"""
-        # 1. Валидация state (из Redis)
-        stored_data = await VKOAuthService.validate_state(state)
-
-        code_verifier = stored_data["code_verifier"]
-
-        # 2. Получение токенов
-        vk_id_token, res_obj = await VKOAuthService.get_vk_tokens(
-            code=code, code_verifier=code_verifier, device_id=device_id
-        )
-
-        token_data = res_obj.json()
-
-        # 3. Информация о пользователе
-        user_info = await VKOAuthService.get_vk_user_info(
-            vk_access_token=token_data["access_token"]
-        )
-
-        return {
-            "user_info": user_info,
-            "vk_access_token": token_data["access_token"],
-        }
+    # @staticmethod
+    # async def exchange_codes_for_vk_tokens(
+    #         session: DBSession,
+    #         code: str,
+    #         state: str,
+    #         device_id: str,
+    # ):
+    #     """Финальный шаг: обмен кода на токены и вход"""
+    #     # 1. Валидация state (из Redis)
+    #     stored_data = await VKOAuthService.validate_state(state)
+    #
+    #     code_verifier = stored_data["code_verifier"]
+    #
+    #     # 2. Получение токенов
+    #     vk_id_token, res_obj = await VKOAuthService.get_vk_tokens(
+    #         code=code, code_verifier=code_verifier, device_id=device_id
+    #     )
+    #
+    #     token_data = res_obj.json()
+    #
+    #     # 3. Информация о пользователе
+    #     user_info = await VKOAuthService.get_vk_user_info(
+    #         vk_access_token=token_data["access_token"]
+    #     )
+    #
+    #     return {
+    #         "user_info": user_info,
+    #         "vk_access_token": token_data["access_token"],
+    #     }
 
 
     @staticmethod

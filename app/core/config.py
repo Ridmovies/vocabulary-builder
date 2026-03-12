@@ -55,6 +55,7 @@ class Settings(BaseSettings):
 
     # CORS (важно для кук!)
     BACKEND_CORS_ORIGINS: list[AnyHttpUrl] = ["http://localhost:8000"]
+    FRONTEND_URL: str = "/"
 
 
     # VK OAUTH
@@ -70,7 +71,7 @@ class Settings(BaseSettings):
     YANDEX_CLOUD_PUBLIC_BUCKET_NAME: str = "words-images"
     YANDEX_PRESIGNED_URL_EXPIRES_SECONDS: int = 300
 
-    FRONTEND_URL: str = "/"
+
 
 
 settings = Settings()

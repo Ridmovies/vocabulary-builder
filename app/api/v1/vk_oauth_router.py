@@ -7,6 +7,7 @@ from app.api.deps import DBSession
 from app.core.config import settings
 from app.core.logger import logger
 from app.core.security import set_auth_cookies
+from app.schemas.oauth import VKAuthLink
 from app.services.vk_oauth_service import VKOAuthService
 
 router = APIRouter()
@@ -36,6 +37,7 @@ router = APIRouter()
     """,
     response_description="Ссылка для авторизации VK ID для не авторизованных пользователей",
     response_class=JSONResponse,
+    response_model=VKAuthLink,
 )
 async def get_vk_auth_url():
     """
@@ -48,7 +50,7 @@ async def get_vk_auth_url():
 
 @router.get(
     "/callback/vkontakte",
-    summary="⚠️ Не используется. Callback от VK OAuth",
+    summary="Callback от VK OAuth",
     status_code=status.HTTP_200_OK,
 )
 async def callback_vk(
@@ -59,6 +61,19 @@ async def callback_vk(
     device_id: str,
 ):
     """
+    Эндпоинт `/callback/vkontakte` выполняет финальный шаг авторизации через VK OAuth.
+
+    После того как пользователь успешно авторизуется на стороне VK, VK перенаправляет его на этот callback с параметрами `code`, `state` и `device_id`.
+
+    Внутри эндпоинта происходит следующее:
+
+    1. Логируются полученные параметры для отладки.
+    2. Через сервис `VKOAuthService` код авторизации (`code`) обменивается на `access_token` VK, с проверкой `state` для защиты от CSRF.
+    3. На основе VK-токена пользователь либо создаётся в базе, либо логинится через существующий аккаунт (`register_or_login_vk`). Возвращается словарь с `access_token`, `refresh_token` и `csrf_token`.
+    4. Создаётся `RedirectResponse`, которая отправляет пользователя на фронтенд (`settings.FRONTEND_URL`).
+    5. В ответ устанавливаются куки с токенами: access и refresh JWT токены, а также CSRF токен.
+
+    Итог: пользователь получает куки для авторизации, и фронтенд автоматически видит, что пользователь вошёл, после редиректа.
     """
     logger.debug(f"Финальный callback от VK OAuth после успешной авторизации")
     logger.debug(f"{code=}")
