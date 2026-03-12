@@ -70,5 +70,7 @@ class Settings(BaseSettings):
     YANDEX_CLOUD_PUBLIC_BUCKET_NAME: str = "words-images"
     YANDEX_PRESIGNED_URL_EXPIRES_SECONDS: int = 300
 
+    FRONTEND_URL: str = "/"
+
 
 settings = Settings()

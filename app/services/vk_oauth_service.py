@@ -9,11 +9,12 @@ import httpx
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import Response
 
 from app.api.deps import DBSession
 from app.core.config import settings
 from app.core.logger import logger
-from app.core.security import create_access_token
+from app.core.security import create_access_token, create_refresh_token, create_csrf_token, set_auth_cookies
 from app.crud.crud_oauth import OAuthAccountRepository
 from app.crud.crud_user import user_crud
 from app.models import User
@@ -89,14 +90,14 @@ class VKOAuthService:
         entry = _state_store.get(state)
         if not entry:
             message = "Неверный или просроченный state токен."
-            print(f"ERROR: {message} {state}")  # можно заменить на логгер
+            logger.debug(f"ERROR: {message} {state}")  # можно заменить на логгер
             raise ValueError(message)
 
         # проверка TTL (10 минут)
         if time.time() - entry["ts"] > 600:
             del _state_store[state]
             message = "State токен истёк."
-            print(f"ERROR: {message} {state}")
+            logger.debug(f"ERROR: {message} {state}")
             raise ValueError(message)
 
         # удаляем после чтения (одноразовый)
@@ -235,34 +236,6 @@ class VKOAuthService:
             vk_access_token: str,
     ):
         """
-        Регистрация или вход пользователя через VK OAuth.
-
-        Алгоритм работы:
-
-        1. Получение информации о пользователе через VK API используя vk_access_token:
-           - user_id, email, имя, фамилия, пол, аватар, день рождения.
-
-        2. Подготовка данных для локальной модели пользователя:
-           - Если email отсутствует, генерируется временный email на основе vk_id.
-           - Генерируется уникальный username.
-           - Создаётся случайный криптографический пароль и хешируется.
-
-        3. Проверка существования аккаунта:
-           a) По vk_id через OAuthAccountRepository.
-              - Если найден, используется связанный пользователь.
-           b) Если vk_id не найден, проверяется существующий пользователь по email.
-              - Если найден, привязывается VK OAuth аккаунт к существующему пользователю.
-           c) Если пользователь не найден, создаётся новый пользователь с подготовленными данными и привязывается VK OAuth аккаунт.
-
-        4. Создание локального JWT access_token для пользователя с использованием внутренней функции create_access_token.
-
-        5. Возврат словаря с ключом "access_token", который используется frontend для аутентификации с backend.
-
-        Особенности:
-
-        - Пользователь не получает пароль напрямую; для обычного входа требуется отдельный флоу установки пароля.
-        - Метод обеспечивает единый вход/регистрацию через VK, сохраняя бизнес-инварианты (email обязательный).
-        - Логирование debug уровня фиксирует этапы поиска и привязки аккаунта, но не содержит чувствительные токены VK.
         """
 
         # Получаем user_info
@@ -345,7 +318,13 @@ class VKOAuthService:
             username=user.username,
             email=user.email,
         )
-        return {"access_token": access_token}
+
+        refresh_token = create_refresh_token(user_id=int(user.id))
+
+        # 3. Создаем CSRF токен
+        csrf_token = create_csrf_token()
+
+        return {"access_token": access_token, "refresh_token": refresh_token, "csrf_token": csrf_token}
 
 
     @staticmethod

@@ -14,13 +14,12 @@ from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from app.api.deps import get_db
+from app.core.config import settings
 from app.crud.crud_catigory import category_crud
 from app.main import app
 from app.models import Base
 
-TEST_DATABASE_URL = (
-    "postgresql+asyncpg://postgres:root@localhost/vocab_test"
-)
+TEST_DATABASE_URL = settings.DATABASE_URL
 
 engine_test = create_async_engine(
     url=TEST_DATABASE_URL,
@@ -37,6 +36,7 @@ AsyncSessionTest = async_sessionmaker(
 async def prepare_database():
     # Создаём таблицы один раз для всей сессии
     async with engine_test.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield
     # drop_all необязательно, можно оставить
