@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     MODE: Literal["DEV", "TEST", "PROD", "STAGING"]
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "DEBUG"
 
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:root@localhost/vocabulary"
+    DATABASE_URL: str
+    TEST_DATABASE_URL: str
 
     # Разберем по частям:
     # postgresql+asyncpg://  - Используем PostgreSQL с async драйвером
