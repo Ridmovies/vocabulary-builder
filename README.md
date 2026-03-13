@@ -26,6 +26,7 @@ Backend:
 * Pydantic
 * OAuth 2.0
 * Pytest
+* JWT, куки транспорт
 
 Frontend (простые страницы):
 
