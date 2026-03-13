@@ -38,6 +38,14 @@
                         </button>
                     </div>
 
+                    <!-- Кнопка авторизации через VK -->
+                    <div class="d-grid gap-2 mt-3">
+                        <button id="vkLoginBtn" class="btn btn-outline-primary">
+                            Войти через VK
+                        </button>
+                    </div>
+
+
                     <!-- Ссылка на регистрацию (если есть) -->
                     <div class="text-center mt-3">
                         <small class="text-muted">
@@ -121,5 +129,29 @@ function showMessage(text, type) {
         }, 3000);
     }
 }
+</script>
+
+
+<script>
+document.getElementById('vkLoginBtn').addEventListener('click', async () => {
+    try {
+        const response = await fetch('/api/auth/vk/get_auth_url', {
+            method: 'GET',
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка получения VK auth url');
+        }
+
+        const data = await response.json();
+
+        // переход на страницу VK OAuth
+        window.location.href = data.auth_url;
+
+    } catch (err) {
+        showMessage('Ошибка VK авторизации: ' + err.message, 'danger');
+    }
+});
 </script>
 {% endblock %}
