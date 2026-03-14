@@ -4,5 +4,6 @@
 
 .env
 .env.docker
+.env.docker.staging
 
 __pycache__
