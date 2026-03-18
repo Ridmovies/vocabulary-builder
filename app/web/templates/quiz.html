@@ -4,13 +4,13 @@
 {% block title %}Квиз по словам - English Learning{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-3">
     <!-- Заголовок -->
     <div class="row mb-5">
-        <div class="col-12 text-center">
-<!--            <h1 class="display-4 fw-bold mb-3">Проверка знаний</h1>-->
-            <p class="lead text-muted">Выберите правильный перевод английского слова</p>
-        </div>
+<!--        <div class="col-12 text-center">-->
+<!--&lt;!&ndash;            <h1 class="display-4 fw-bold mb-3">Проверка знаний</h1>&ndash;&gt;-->
+<!--&lt;!&ndash;            <p class="lead text-muted">Выберите правильный перевод английского слова</p>&ndash;&gt;-->
+<!--        </div>-->
     </div>
 
     <div class="row justify-content-center">
@@ -67,43 +67,44 @@
 
             <!-- Карточка вопроса (изначально скрыта) -->
             <div class="card shadow-lg border-0 d-none" id="quizCard">
-                <div class="card-body p-4">
-                    <!-- Статистика -->
-                    <div class="row mb-4">
-                        <div class="col-md-4 text-center">
-                            <div class="stat-number text-success" id="correctCount">0</div>
-                            <div class="text-muted">Правильно</div>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <div class="stat-number text-danger" id="wrongCount">0</div>
-                            <div class="text-muted">Неправильно</div>
-                        </div>
-                        <div class="col-md-4 text-center">
-                            <div class="stat-number text-primary" id="totalCount">0</div>
-                            <div class="text-muted">Всего вопросов</div>
-                        </div>
-                    </div>
+    <div class="card-body p-4">
+        <div class="text-center py-1">
+            <!-- Вопрос -->
+            <div class="display-2 fw-bold text-primary mb-4" id="questionWord"></div>
 
-                    <!-- Вопрос -->
-                    <div class="text-center py-5">
-<!--                        <h3 class="mb-4">Выберите перевод слова:</h3>-->
-                        <div class="display-2 fw-bold text-primary mb-5" id="questionWord"></div>
+            <!-- Варианты ответов -->
+            <div class="row g-3" id="optionsContainer">
+                <!-- Варианты будут сгенерированы здесь -->
+            </div>
 
-                        <!-- Варианты ответов -->
-                        <div class="row g-3" id="optionsContainer">
-                            <!-- Варианты будут сгенерированы здесь -->
-                        </div>
-
-                        <!-- Кнопка паузы -->
-<!--                        <div class="mt-5">-->
-<!--                            <button class="btn btn-outline-secondary" id="pauseQuizBtn">-->
-<!--                                <i class="bi bi-pause-circle me-2"></i>-->
-<!--                                Пауза-->
-<!--                            </button>-->
-<!--                        </div>-->
-                    </div>
+                        <!-- Статистика -->
+            <div class="row mb-4 justify-content-center">
+                <div class="col-4 text-center">
+                    <div class="stat-number text-success" id="correctCount">0</div>
+                    <div class="text-muted">Правильно</div>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="stat-number text-danger" id="wrongCount">0</div>
+                    <div class="text-muted">Неправильно</div>
+                </div>
+                <div class="col-4 text-center">
+                    <div class="stat-number text-primary" id="totalCount">0</div>
+                    <div class="text-muted">Всего вопросов</div>
                 </div>
             </div>
+
+            <!-- Кнопка паузы (по желанию оставить) -->
+            <!--
+            <div class="mt-5">
+                <button class="btn btn-outline-secondary" id="pauseQuizBtn">
+                    <i class="bi bi-pause-circle me-2"></i>
+                    Пауза
+                </button>
+            </div>
+            -->
+        </div>
+    </div>
+</div>
 
             <!-- Карточка результата (скрыта) -->
             <div class="card shadow-lg border-0 d-none" id="resultCard">
