@@ -403,6 +403,18 @@ async function showResult(selectedAnswer, isCorrect) {
     document.getElementById('quizCard').classList.add('d-none');
     resultCard.classList.remove('d-none');
 
+    // Скролл вверх к результату
+    setTimeout(() => {
+        resultCard.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }, 50);
+
     // Обновить прогресс-бар
     updateProgressBar();
 
