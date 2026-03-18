@@ -8,7 +8,13 @@ from app.services.users import UserService
 router = APIRouter()
 
 
-@router.post("/register", response_model=UserRead, status_code=201)
+@router.post(
+    "/register",
+    response_model=UserRead,
+    status_code=201,
+    summary="Регистрация пользователя",
+    description="Создаёт нового пользователя и возвращает его данные."
+)
 async def register(
     response: Response,
     user_in: UserCreate,

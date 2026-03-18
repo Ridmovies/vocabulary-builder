@@ -11,39 +11,36 @@ from fastapi import Query
 @router.get(
     "",
     response_model=list[CategoryRead],
-    summary="Получить категории",
+    summary="Список категорий",
     description=(
-        "Возвращает список категорий, доступных пользователю:\n"
-        "- системные категории (owner_id=None)\n"
-        "- пользовательские категории (owner_id=current_user.id)\n"
-        "Пагинация через skip/limit."
+        "Возвращает категории пользователя.\n\n"
+        "Типы:\n"
+        "- system — системные\n"
+        "- mine — пользовательские\n"
+        "- all — все доступные\n\n"
+        "Поддерживает пагинацию."
     )
 )
 async def get_categories(
     session: DBSession,
     current_user: UserDep,
-    scope = Query(
+    scope: str = Query(
         "all",
-        description="Область категорий: all | system | mine"
+        description="Фильтр категорий: all | system | mine"
     ),
     skip: int = Query(
         0,
         ge=0,
-        description="Количество пропущенных категорий (offset)"
+        description="Смещение (offset)"
     ),
     limit: int = Query(
         100,
         ge=1,
         le=1000,
-        description="Максимальное количество категорий для возврата"
+        description="Лимит записей"
     )
 ):
-    """
-    Получить категории с учётом владельца.
-
-    - Системные категории (`owner_id=None`)
-    - Категории текущего пользователя (`owner_id=current_user.id`)
-    """
+    """Получить список категорий."""
     return await category_crud.get_multi_for_user(
         db=session,
         user_id=current_user.id,
@@ -53,13 +50,19 @@ async def get_categories(
     )
 
 
-
-@router.post("", response_model=CategoryRead, status_code=201)
+@router.post(
+    "",
+    response_model=CategoryRead,
+    status_code=201,
+    summary="Создать категорию",
+    description="Создаёт категорию для текущего пользователя."
+)
 async def create_category(
-        session: DBSession,
-        current_user: UserDep,
-        category_in: CategoryCreate,
+    session: DBSession,
+    current_user: UserDep,
+    category_in: CategoryCreate,
 ):
+    """Создать новую категорию."""
     return await category_crud.create_for_user(
         db=session,
         obj_in=category_in,
@@ -67,11 +70,20 @@ async def create_category(
     )
 
 
-
-@router.delete("/{category_id}", status_code=204)
+@router.delete(
+    "/{category_id}",
+    status_code=204,
+    summary="Удалить категорию",
+    description="Удаляет категорию пользователя по ID."
+)
 async def delete_category(
-        session: DBSession,
-        current_user: UserDep,
-        category_id: int,
+    session: DBSession,
+    current_user: UserDep,
+    category_id: int
 ):
-    return await category_crud.remove_for_user(db=session, category_id=category_id, owner_id=current_user.id)
+    """Удалить категорию."""
+    return await category_crud.remove_for_user(
+        db=session,
+        category_id=category_id,
+        owner_id=current_user.id
+    )

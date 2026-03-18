@@ -7,7 +7,19 @@ from app.schemas.translation import TranslationResponse, WordRequest
 router = APIRouter()
 
 
-@router.post("", response_model=TranslationResponse)
+@router.post(
+    "",
+    response_model=TranslationResponse,
+    summary="Перевод слова",
+    description=(
+        "Переводит слово между языками.\n\n"
+        "Возвращает:\n"
+        "- исходный текст\n"
+        "- перевод\n"
+        "- возможные варианты перевода\n"
+        "- языки источника и назначения"
+    )
+)
 async def translate(
         session: DBSession,
         current_user: UserDep,

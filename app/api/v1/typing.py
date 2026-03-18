@@ -13,7 +13,18 @@ router = APIRouter()
 
 
 
-@router.get("/random", response_model=WordRead)
+@router.get(
+    "/random",
+    response_model=WordRead,
+    summary="Случайное слово",
+    description=(
+        "Возвращает случайное слово пользователя.\n\n"
+        "Поддерживает:\n"
+        "- пагинацию\n"
+        "- фильтр по категориям\n\n"
+        "Если слова не найдены — 404."
+    )
+)
 async def get_random_word(
     session: DBSession,
     current_user: UserDep,
@@ -42,7 +53,11 @@ async def get_random_word(
     return choice(words)
 
 
-@router.post("/check")
+@router.post(
+    "/check",
+    summary="Проверка ответа",
+    description="Проверяет правильность введённого перевода слова."
+)
 async def check_answer(
     request: TypingCheckRequest,
     session: DBSession,

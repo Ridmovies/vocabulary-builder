@@ -261,14 +261,18 @@ async def delete_words(
 
 
 
-@router.put("/{word_id}", response_model=WordRead)
+@router.put(
+    "/{word_id}",
+    response_model=WordRead,
+    summary="Обновить слово",
+    description="Обновляет слово и связанные категории по ID."
+)
 async def update_words(
         session: DBSession,
         current_user: UserDep,
         word_id: int,
         word_in: WordUpdate,
 ):
-    # Получаем слово
     word = await word_crud.get(db=session, id=word_id)
     return await word_crud.update_with_categories(db=session, obj_in=word_in, db_obj=word)
 
@@ -276,6 +280,8 @@ async def update_words(
 @router.post(
     path="/{word_id}/image",
     response_model=WordRead,
+    summary="Загрузить изображение",
+    description="Загружает изображение для слова."
 )
 async def post_image(
         word_id: int,
@@ -291,7 +297,11 @@ async def post_image(
     )
 
 
-@router.delete(path="/{word_id}/image")
+@router.delete(
+    path="/{word_id}/image",
+    summary="Удалить изображение",
+    description="Удаляет изображение слова."
+)
 async def delete_image(
         word_id: int,
         session: DBSession,
@@ -304,8 +314,11 @@ async def delete_image(
     )
 
 
-
-@router.post("/favorites/{word_id}")
+@router.post(
+    "/favorites/{word_id}",
+    summary="Добавить в избранное",
+    description="Добавляет слово в список избранного пользователя."
+)
 async def add_to_favorites(
     word_id: int,
     session: DBSession,
@@ -319,7 +332,11 @@ async def add_to_favorites(
     return {"status": "added"}
 
 
-@router.delete("/favorites/{word_id}")
+@router.delete(
+    "/favorites/{word_id}",
+    summary="Удалить из избранного",
+    description="Удаляет слово из списка избранного пользователя."
+)
 async def remove_from_favorites(
     word_id: int,
     session: DBSession,
