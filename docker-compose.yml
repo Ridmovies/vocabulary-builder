@@ -49,8 +49,21 @@ services:
     env_file:
       - ./.env.docker
 
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    env_file:
+      - ./.env.docker
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+
 # Определение томов для хранения данных
 volumes:
   postgres_data_eng:
-    # Используются настройки по умолчанию
   app_uploads_data: # Объявление тома для загрузок
+  minio_data:       # Minio
