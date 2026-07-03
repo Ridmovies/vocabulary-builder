@@ -229,6 +229,7 @@ async def check_answer(
         session=session,
         word_id=request.word_id,
         answer=request.answer,
+        user_id=current_user.id,
     )
 
 @router.get("/favorites", response_model=list[WordRead])
@@ -248,7 +249,11 @@ async def get_word(
         current_user: UserDep,
         word_id: int,
 ):
-    return await word_crud.get(db=session, id=word_id)
+    return await word_crud.get_for_user(
+        db=session,
+        user_id=current_user.id,
+        word_id=word_id,
+    )
 
 
 @router.delete("/{word_id}", status_code=204)
@@ -257,7 +262,11 @@ async def delete_words(
         current_user: UserDep,
         word_id: int,
 ):
-    return await word_crud.remove(db=session, id=word_id)
+    await word_crud.remove_for_user(
+        db=session,
+        user_id=current_user.id,
+        word_id=word_id,
+    )
 
 
 
@@ -273,8 +282,22 @@ async def update_words(
         word_id: int,
         word_in: WordUpdate,
 ):
-    word = await word_crud.get(db=session, id=word_id)
-    return await word_crud.update_with_categories(db=session, obj_in=word_in, db_obj=word)
+    word = await word_crud.get_for_user(
+        db=session,
+        user_id=current_user.id,
+        word_id=word_id,
+    )
+    if word.owner_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Слово не найдено"
+        )
+    return await word_crud.update_with_categories(
+        db=session,
+        obj_in=word_in,
+        db_obj=word,
+        owner_id=current_user.id,
+    )
 
 
 @router.post(

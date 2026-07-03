@@ -19,11 +19,16 @@ from app.crud.crud_catigory import category_crud
 from app.main import app
 from app.models import Base
 
-TEST_DATABASE_URL = settings.DATABASE_URL
+TEST_DATABASE_URL = settings.TEST_DATABASE_URL
+
+if TEST_DATABASE_URL == settings.DATABASE_URL:
+    raise RuntimeError(
+        "TEST_DATABASE_URL must not match DATABASE_URL because tests recreate all tables"
+    )
 
 engine_test = create_async_engine(
     url=TEST_DATABASE_URL,
-    poolclass = NullPool,  # ключевой момент для тестов
+    poolclass=NullPool,
 )
 
 AsyncSessionTest = async_sessionmaker(

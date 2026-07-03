@@ -1,5 +1,5 @@
-from googletrans import Translator
 from fastapi import APIRouter
+from googletrans import Translator
 
 from app.api.deps import DBSession, UserDep
 from app.schemas.translation import TranslationResponse, WordRequest
@@ -29,10 +29,6 @@ async def translate(
     translator = Translator()
     # Ждём выполнение корутины
     result = await translator.translate(request.word, src=request.src_lang, dest=request.dest_lang)
-
-
-    print(f"result: {result}")
-
 
     # Возвращаем только сериализуемые поля
     return TranslationResponse(

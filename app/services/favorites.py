@@ -1,7 +1,10 @@
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette import status
 
 from app.models import User, Word
+from app.crud.crud_words import word_crud
 
 
 class FavoriteService:
@@ -13,10 +16,17 @@ class FavoriteService:
         word_id: int,
     ):
         user = await session.get(User, user_id)
-        word = await session.get(Word, word_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
 
-        if not user or not word:
-            raise ValueError("User or Word not found")
+        word = await word_crud.get_for_user(
+            db=session,
+            word_id=word_id,
+            user_id=user_id,
+        )
 
         if word not in user.favorite_words:
             user.favorite_words.append(word)
@@ -31,7 +41,17 @@ class FavoriteService:
         word_id: int,
     ):
         user = await session.get(User, user_id)
-        word = await session.get(Word, word_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        word = await word_crud.get_for_user(
+            db=session,
+            word_id=word_id,
+            user_id=user_id,
+        )
 
         if word in user.favorite_words:
             user.favorite_words.remove(word)
