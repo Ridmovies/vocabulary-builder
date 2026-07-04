@@ -4,6 +4,7 @@ from datetime import timedelta, datetime, timezone
 from typing import Optional, Dict, Any
 
 import jwt
+from fastapi import HTTPException
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -111,7 +112,8 @@ def set_auth_cookies(
             key=settings.REFRESH_TOKEN_COOKIE_NAME,
             value=refresh_token,
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-            path="/api/auth",  # Только для эндпоинтов refresh
+            # path="/api/auth",  # Только для эндпоинтов refresh
+            path="/",
             secure=settings.ACCESS_TOKEN_COOKIE_SECURE,
             httponly=True,
             samesite=settings.ACCESS_TOKEN_COOKIE_SAMESITE
@@ -206,4 +208,3 @@ def verify_csrf_token(csrf_token: str, csrf_cookie: str) -> bool:
         True если токены совпадают
     """
     return secrets.compare_digest(csrf_token, csrf_cookie)
-
