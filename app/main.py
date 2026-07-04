@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
@@ -37,6 +38,7 @@ templates = Jinja2Templates(directory="templates")
 # Статика: CSS, JS, картинки
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+
 app.include_router(router=user_router, prefix="/api/users", tags=["users"])
 app.include_router(router=auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(router=vk_router, prefix="/api/auth", tags=["vk"])
@@ -48,3 +50,15 @@ app.include_router(router=category_router, prefix="/api/categories", tags=["cate
 app.include_router(router=typing_router, prefix="/api/web", tags=["web"])
 
 app.include_router(router=web_typing_router)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],  # фронт
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
