@@ -27,6 +27,15 @@ async def test_get_me(auth_client):
 
 
 @pytest.mark.asyncio
+async def test_get_me_with_invalid_token_returns_401(async_client):
+    async_client.cookies.set("access", "invalid-token")
+
+    response = await async_client.get("/api/auth/me")
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_logout(auth_client):
     # 1️⃣ Проверяем, что защищённый эндпоинт работает до logout
     response = await auth_client.get("/api/auth/me")

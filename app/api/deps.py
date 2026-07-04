@@ -88,7 +88,10 @@ async def get_current_user(
     payload = decode_jwt_token(access_token)
 
     if not payload or payload.get("type") != "access":
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token"
+        )
 
     # 4. Получить пользователя из БД
     user_id = payload.get("sub")
@@ -98,10 +101,21 @@ async def get_current_user(
             detail="Invalid token payload"
         )
 
-    user = await user_crud.get(db, id=int(user_id))
+    try:
+        user_id_int = int(user_id)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload"
+        )
+
+    user = await user_crud.get(db, id=user_id_int)
 
     if not user or not user.is_active:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User is inactive or does not exist"
+        )
 
     # 5. Обновить last_login (опционально)
     # Можно добавить здесь
@@ -149,7 +163,7 @@ async def get_optional_user(
 
         return user
 
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 # UserDepOptional: type[User] = Annotated[Optional[User], Depends(get_optional_user)]

@@ -67,4 +67,5 @@ async def check_answer(
         session=session,
         word_id=request.word_id,
         answer=request.answer,
+        user_id=current_user.id,
     )

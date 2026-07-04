@@ -1,7 +1,5 @@
-from typing import Optional, List
-
 from fastapi import HTTPException
-from sqlalchemy import select, or_, and_, update
+from sqlalchemy import select, or_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from starlette import status
@@ -46,7 +44,10 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
             # Проверяем, что все категории доступны пользователю или системные
             for cat in categories:
                 if cat.owner_id not in (None, user_id):
-                    raise ValueError(f"Категория {cat.id} недоступна пользователю")
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Категория {cat.id} недоступна пользователю"
+                    )
 
             # Фильтруем слова по этим категориям
             query = query.join(Word.categories).where(Category.id.in_(category_ids))
@@ -62,7 +63,10 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
         # 🔹 Только избранные слова
         if is_favorite:
             if not user_id:
-                raise ValueError("user_id обязателен при is_favorite=True")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="user_id обязателен при is_favorite=True"
+                )
             query = query.join(favorite_words).where(favorite_words.c.user_id == user_id)
 
         result = await db.execute(query)
@@ -96,7 +100,10 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
 
             # Проверка: все указанные категории должны принадлежать пользователю
             if len(categories) != len(set(obj_in.category_ids)):
-                raise ValueError("Все категории должны принадлежать текущему пользователю")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Все категории должны принадлежать текущему пользователю"
+                )
 
             word.categories.extend(categories)
 
@@ -112,7 +119,8 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
             db: AsyncSession,
             *,
             db_obj: Word,
-            obj_in: WordUpdate
+            obj_in: WordUpdate,
+            owner_id: int,
     ) -> Word:
 
         # 1. Обновляем простые поля
@@ -124,9 +132,17 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
         # 2. Обновляем категории, если пришли
         if "category_ids" in update_data:
             result = await db.execute(
-                select(Category).where(Category.id.in_(update_data["category_ids"]))
+                select(Category).where(
+                    Category.id.in_(update_data["category_ids"]),
+                    Category.owner_id == owner_id,
+                )
             )
             categories = result.scalars().all()
+            if len(categories) != len(set(update_data["category_ids"])):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Все категории должны принадлежать текущему пользователю"
+                )
             db_obj.categories = categories  # перезаписываем связи
 
         # 3. Сохраняем
@@ -167,6 +183,25 @@ class CRUDWord(CRUDBase[Word, WordCreate, WordUpdate]):
                 detail="Слово не найдено"
             )
 
+        return word
+
+    async def remove_for_user(
+            self,
+            db: AsyncSession,
+            *,
+            word_id: int,
+            user_id: int,
+    ) -> Word:
+        """Удалить слово владельца, не раскрывая наличие чужих слов."""
+        word = await self.get_for_user(db=db, word_id=word_id, user_id=user_id)
+        if word.owner_id != user_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Слово не найдено"
+            )
+
+        await db.delete(word)
+        await db.commit()
         return word
 
     async def update_image(
