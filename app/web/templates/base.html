@@ -1,218 +1,266 @@
-<!-- templates/base.html -->
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="light" data-bs-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}English Learning{% endblock %}</title>
-    <!-- Bootstrap CSS -->
+    <script>
+        (() => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        })();
+    </script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        .navbar-brand {
-            font-weight: 600;
+        :root {
+            --bg-color: #f7f8fb;
+            --surface-color: #ffffff;
+            --surface-muted: #f1f4f8;
+            --text-color: #1f2937;
+            --muted-color: #667085;
+            --border-color: #d9e0ea;
+            --brand-color: #4f46e5;
+            --brand-hover: #4338ca;
+            --shadow-color: rgba(15, 23, 42, 0.08);
+            --hero-start: #667eea;
+            --hero-end: #764ba2;
         }
+
+        [data-theme="dark"] {
+            --bg-color: #0f172a;
+            --surface-color: #182235;
+            --surface-muted: #111827;
+            --text-color: #e5e7eb;
+            --muted-color: #a5b4c8;
+            --border-color: #334155;
+            --brand-color: #818cf8;
+            --brand-hover: #6366f1;
+            --shadow-color: rgba(0, 0, 0, 0.35);
+            --hero-start: #312e81;
+            --hero-end: #581c87;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            min-width: 320px;
+            overflow-x: hidden;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        main { min-height: 65vh; }
+
+        a { color: var(--brand-color); }
+        a:hover { color: var(--brand-hover); }
+
+        .container { max-width: 1140px; }
+
+        .navbar,
+        .app-footer,
+        .card,
+        .modal-content,
+        .dropdown-menu,
+        .list-group-item,
+        .input-group-text,
+        .page-link {
+            background-color: var(--surface-color) !important;
+            color: var(--text-color) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .navbar { border-bottom: 1px solid var(--border-color); }
+        .navbar-brand { font-weight: 700; }
+        .navbar-toggler { min-width: 44px; min-height: 44px; border-color: var(--border-color); }
+        .nav-link, .dropdown-item { min-height: 44px; display: flex; align-items: center; }
+        .dropdown-item:hover { background-color: var(--surface-muted); }
+
+        .text-muted,
+        .form-text,
+        small.text-muted,
+        .card-subtitle { color: var(--muted-color) !important; }
+
+        .text-dark { color: var(--text-color) !important; }
+        .border-top, .border-bottom, .border, hr { border-color: var(--border-color) !important; }
+
+        .bg-light,
+        .card-header,
+        .card-footer,
+        .alert-light,
+        .list-group-item.bg-light,
+        .bg-white {
+            background-color: var(--surface-muted) !important;
+            color: var(--text-color) !important;
+        }
+
+        .card,
+        .modal-content,
+        .shadow-sm,
+        .shadow-lg { box-shadow: 0 0.5rem 1.5rem var(--shadow-color) !important; }
+
+        .form-control,
+        .form-select,
+        textarea.form-control {
+            min-height: 44px;
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            border-color: var(--border-color);
+            font-size: 16px;
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        .btn-check:focus + .btn {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            border-color: var(--brand-color);
+            box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--brand-color) 25%, transparent);
+        }
+
+        .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-sm { min-height: 36px; }
+        .btn-primary { background-color: var(--brand-color); border-color: var(--brand-color); }
+        .btn-primary:hover { background-color: var(--brand-hover); border-color: var(--brand-hover); }
+        .badge { min-height: 28px; display: inline-flex; align-items: center; }
+        .progress { background-color: var(--surface-muted); }
+        .btn-close { filter: var(--bs-btn-close-white-filter, none); }
+        [data-theme="dark"] .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--hero-start), var(--hero-end));
+            color: #fff;
+            padding: 3rem 0;
+        }
+
+        .feature-card { border: 0; }
+        .stat-number { font-size: clamp(1.8rem, 8vw, 2.6rem); font-weight: 700; color: var(--brand-color); }
+
         .user-avatar {
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background-color: #6c757d;
-            color: white;
-            display: flex;
+            background: var(--brand-color);
+            color: #fff;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 700;
         }
-        .hero-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 80px 0;
+
+        .theme-switch { gap: .5rem; }
+        .theme-switch .form-check-input { width: 2.75rem; min-height: 1.4rem; cursor: pointer; }
+
+        img, svg, video { max-width: 100%; height: auto; }
+        pre, code { white-space: pre-wrap; word-break: break-word; }
+        .table-responsive, .row { max-width: 100%; }
+
+        .app-footer {
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+            padding: 1.5rem 0;
         }
-        .feature-card {
-            transition: transform 0.3s;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #667eea;
+
+        @media (max-width: 575.98px) {
+            body { font-size: 15px; }
+            .container { padding-left: 1rem; padding-right: 1rem; }
+            .hero-section { padding: 2.25rem 0; }
+            .display-2 { font-size: 2.4rem; }
+            .display-4, .display-5 { font-size: 2rem; }
+            .lead { font-size: 1rem; }
+            .card-body { padding: 1rem; }
+            .d-flex.mobile-stack { flex-direction: column; align-items: stretch !important; gap: .75rem; }
+            .btn, .form-control, .form-select { width: 100%; }
+            .pagination { flex-wrap: wrap; gap: .25rem; }
         }
     </style>
 </head>
 <body>
-    <!-- Навигационная панель -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
-            <!-- Бренд -->
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <i class="bi bi-translate me-2"></i>
-                English Learning
+                <i class="bi bi-translate me-2"></i>English Learning
             </a>
 
-            <!-- Кнопка для мобильных устройств -->
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Открыть меню">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <!-- Навигационные ссылки -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">
-                            <i class="bi bi-house-door me-1"></i>
-                            Главная
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/grammar">
-                            <i class="bi bi-journal-text me-1"></i>
-                            Грамматика
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/translate">
-                            <i class="bi bi-translate me-1"></i>
-                            Переводчик
-                        </a>
-                    </li>
-
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-house-door me-1"></i>Главная</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/grammar"><i class="bi bi-journal-text me-1"></i>Грамматика</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/translate"><i class="bi bi-translate me-1"></i>Переводчик</a></li>
                     {% if user %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/create-word">
-                            <i class="bi bi-plus-circle me-1"></i>
-                            Добавить слово
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/typing-exercise">
-                            <i class="bi bi-keyboard me-1"></i>
-                            Тренировка
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/quiz-page">
-                            <i class="bi bi-question-circle me-1"></i>
-                            Квиз
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="/my-words">
-                            <i class="bi bi-journal-text me-1"></i>
-                            Мои слова
-                        </a>
-                    </li>
-
-                    <!-- Добавьте в навигацию после ссылки на "Мои слова" -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="/categories">
-                            <i class="bi bi-folder me-1"></i>
-                            Категории
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/create-word"><i class="bi bi-plus-circle me-1"></i>Добавить</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/typing-exercise"><i class="bi bi-keyboard me-1"></i>Тренировка</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/quiz-page"><i class="bi bi-question-circle me-1"></i>Квиз</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/my-words"><i class="bi bi-journal-text me-1"></i>Слова</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/categories"><i class="bi bi-folder me-1"></i>Категории</a></li>
                     {% endif %}
                 </ul>
 
-                <!-- Правая часть навигации -->
-                <ul class="navbar-nav">
+                <div class="navbar-nav align-items-lg-center gap-2">
+                    <div class="nav-item d-flex align-items-center theme-switch px-lg-2">
+                        <i class="bi bi-sun"></i>
+                        <div class="form-check form-switch m-0">
+                            <input class="form-check-input" type="checkbox" role="switch" id="themeToggle" aria-label="Переключить темную тему">
+                        </div>
+                        <i class="bi bi-moon"></i>
+                    </div>
+
                     {% if user %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
-                            <div class="user-avatar me-2">
-                                {{ user.username[0]|upper }}
-                            </div>
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="user-avatar me-2">{{ user.username[0]|upper }}</span>
                             <span>{{ user.username }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="/profile">
-                                    <i class="bi bi-person me-2"></i>
-                                    Профиль
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="/settings">
-                                    <i class="bi bi-gear me-2"></i>
-                                    Настройки
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="/logout">
-                                    <i class="bi bi-box-arrow-right me-2"></i>
-                                    Выйти
-                                </a>
-                            </li>
+                            <li><a class="dropdown-item text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Выйти</a></li>
                         </ul>
-                    </li>
+                    </div>
                     {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login">
-                            <i class="bi bi-box-arrow-in-right me-1"></i>
-                            Войти
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary ms-2" href="/register">
-                            <i class="bi bi-person-plus me-1"></i>
-                            Регистрация
-                        </a>
-                    </li>
+                    <a class="nav-link" href="/login"><i class="bi bi-box-arrow-in-right me-1"></i>Войти</a>
+                    <a class="btn btn-primary" href="/register"><i class="bi bi-person-plus me-1"></i>Регистрация</a>
                     {% endif %}
-                </ul>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Основное содержимое -->
     <main>
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Футер -->
-    <footer class="bg-light text-center text-lg-start mt-5">
-        <div class="container p-4">
-            <div class="row">
-                <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
-                    <h5 class="text-uppercase">English Learning</h5>
-                    <p>
-                        Приложение для изучения английских слов.
-                        Учите слова, тренируйтесь и отслеживайте свой прогресс.
-                    </p>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5 class="text-uppercase">Ссылки</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="/" class="text-dark">Главная</a></li>
-                        {% if user %}
-                        <li><a href="/my-words" class="text-dark">Мои слова</a></li>
-                        <li><a href="/typing-exercise" class="text-dark">Тренировка</a></li>
-                        {% endif %}
-                    </ul>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5 class="text-uppercase">Контакты</h5>
-                    <ul class="list-unstyled">
-                        <li><i class="bi bi-envelope me-2"></i> support@example.com</li>
-                    </ul>
-                </div>
+    <footer class="app-footer">
+        <div class="container d-flex mobile-stack justify-content-between align-items-center">
+            <div>
+                <strong>English Learning</strong>
+                <div class="small text-muted">Слова, тренировки и прогресс в одном месте.</div>
             </div>
-        </div>
-        <div class="text-center p-3 bg-dark text-white">
-            © 2024 English Learning
+            <div class="small text-muted">© 2024 English Learning</div>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggle = document.getElementById('themeToggle');
+            const applyTheme = (theme) => {
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('theme', theme);
+                if (toggle) toggle.checked = theme === 'dark';
+            };
+
+            applyTheme(localStorage.getItem('theme') || 'light');
+            toggle?.addEventListener('change', () => applyTheme(toggle.checked ? 'dark' : 'light'));
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,37 +1,24 @@
-<!-- templates/quiz.html -->
 {% extends "base.html" %}
 
 {% block title %}Квиз по словам - English Learning{% endblock %}
 
 {% block content %}
-<div class="container py-3">
-    <!-- Заголовок -->
-    <div class="row mb-5">
-<!--        <div class="col-12 text-center">-->
-<!--&lt;!&ndash;            <h1 class="display-4 fw-bold mb-3">Проверка знаний</h1>&ndash;&gt;-->
-<!--&lt;!&ndash;            <p class="lead text-muted">Выберите правильный перевод английского слова</p>&ndash;&gt;-->
-<!--        </div>-->
-    </div>
-
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
-            <!-- Карточка настроек квиза -->
+        <div class="col-12 col-md-10 col-lg-8">
             <div class="card shadow-sm border-0 mb-4" id="settingsCard">
-                <div class="card-body p-4">
+                <div class="card-body p-3 p-md-4">
                     <h4 class="card-title mb-4">Настройки квиза</h4>
 
                     <form id="quizSettingsForm">
-                        <!-- Фильтр по категориям -->
                         <div class="mb-3">
                             <label class="form-label">Выберите категории</label>
                             <div class="form-text mb-2">Оставьте пустым, чтобы выбрать все категории</div>
                             <select class="form-select" id="categoryIds" multiple>
-                                <!-- Категории будут загружены через JavaScript -->
                             </select>
                             <div class="form-text">Удерживайте Ctrl для выбора нескольких категорий</div>
                         </div>
 
-                        <!-- Фильтр по избранным -->
                         <div class="mb-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="isFavorite">
@@ -41,7 +28,6 @@
                             </div>
                         </div>
 
-                        <!-- Параметры пагинации -->
                         <div class="row mb-4">
                             <div class="col-md-6 mb-3 mb-md-0">
                                 <label for="limit" class="form-label">Количество слов для выбора</label>
@@ -65,75 +51,47 @@
                 </div>
             </div>
 
-            <!-- Карточка вопроса (изначально скрыта) -->
             <div class="card shadow-lg border-0 d-none" id="quizCard">
-    <div class="card-body p-4">
-        <div class="text-center py-1">
-            <!-- Вопрос -->
-            <div class="display-2 fw-bold text-primary mb-4" id="questionWord"></div>
-
-            <!-- Варианты ответов -->
-            <div class="row g-3" id="optionsContainer">
-                <!-- Варианты будут сгенерированы здесь -->
-            </div>
-
-                        <!-- Статистика -->
-            <div class="row mb-4 justify-content-center">
-                <div class="col-4 text-center">
-                    <div class="stat-number text-success" id="correctCount">0</div>
-                    <div class="text-muted">Правильно</div>
-                </div>
-                <div class="col-4 text-center">
-                    <div class="stat-number text-danger" id="wrongCount">0</div>
-                    <div class="text-muted">Неправильно</div>
-                </div>
-                <div class="col-4 text-center">
-                    <div class="stat-number text-primary" id="totalCount">0</div>
-                    <div class="text-muted">Всего вопросов</div>
+                <div class="card-body p-3 p-md-4">
+                    <div class="text-center py-1">
+                        <div class="display-2 fw-bold text-primary mb-4" id="questionWord"></div>
+                        <div class="row g-3" id="optionsContainer"></div>
+                        <div class="row mb-4 justify-content-center small">
+                            <div class="col-4 text-center">
+                                <div class="stat-number text-success" id="correctCount">0</div>
+                                <div class="text-muted">Правильно</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stat-number text-danger" id="wrongCount">0</div>
+                                <div class="text-muted">Неправильно</div>
+                            </div>
+                            <div class="col-4 text-center">
+                                <div class="stat-number text-primary" id="totalCount">0</div>
+                                <div class="text-muted">Всего</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Кнопка паузы (по желанию оставить) -->
-            <!--
-            <div class="mt-5">
-                <button class="btn btn-outline-secondary" id="pauseQuizBtn">
-                    <i class="bi bi-pause-circle me-2"></i>
-                    Пауза
-                </button>
-            </div>
-            -->
-        </div>
-    </div>
-</div>
-
-            <!-- Карточка результата (скрыта) -->
             <div class="card shadow-lg border-0 d-none" id="resultCard">
-                <div class="card-body p-5 text-center">
+                <div class="card-body p-3 p-md-5 text-center">
                     <div class="mb-4">
                         <div class="display-1 mb-3" id="resultIcon"></div>
                         <h2 class="mb-3" id="resultTitle"></h2>
                         <p class="lead" id="resultMessage"></p>
                     </div>
 
-                    <!-- Правильный ответ (если был ошибка) -->
                     <div class="alert alert-info d-none" id="correctAnswerAlert">
                         <h5 class="alert-heading">Правильный ответ:</h5>
                         <div class="display-6" id="correctAnswerText"></div>
                     </div>
-
-<!--                    &lt;!&ndash; Кнопка следующего вопроса &ndash;&gt;-->
-<!--                    <button class="btn btn-primary btn-lg mt-4" id="nextQuestionBtn">-->
-<!--                        <i class="bi bi-arrow-right-circle me-2"></i>-->
-<!--                        Следующий вопрос-->
-<!--                    </button>-->
                 </div>
             </div>
 
-            <!-- Прогресс-бар -->
-            <div class="progress mt-4 d-none" style="height: 8px;" id="progressBar">
+            <div class="progress mt-4 d-none quiz-progress" id="progressBar">
                 <div class="progress-bar progress-bar-striped progress-bar-animated"
                      role="progressbar"
-                     style="width: 0%"
                      id="progressFill"></div>
             </div>
         </div>
@@ -143,28 +101,19 @@
 
 {% block scripts %}
 <script>
+    let currentQuizData = null;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+    let totalQuestions = 0;
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Загрузка категорий при загрузке страницы
         loadCategories();
 
-        // Инициализация переменных
-        let currentQuizData = null;
-        let correctAnswers = 0;
-        let wrongAnswers = 0;
-        let totalQuestions = 0;
-
-        // Обработка начала квиза
         const quizSettingsForm = document.getElementById('quizSettingsForm');
         quizSettingsForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             await startQuiz();
         });
-
-        // Обработка паузы
-        document.getElementById('pauseQuizBtn').addEventListener('click', pauseQuiz);
-
-        // Обработка следующего вопроса
-        document.getElementById('nextQuestionBtn').addEventListener('click', getNextQuestion);
     });
 
     // Загрузка категорий из API
@@ -194,34 +143,28 @@
 
     // Начало квиза
     async function startQuiz() {
-        try {
-            const startBtn = document.getElementById('startQuizBtn');
-            const originalText = startBtn.innerHTML;
+        const startBtn = document.getElementById('startQuizBtn');
+        const originalText = startBtn.innerHTML;
 
-            // Показать состояние загрузки
+        try {
             startBtn.disabled = true;
             startBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Загрузка...';
 
-            // Сброс статистики
             resetStats();
 
-            // Получить первый вопрос
             const success = await getQuizQuestion();
 
             if (success) {
-                // Переключить отображение
                 document.getElementById('settingsCard').classList.add('d-none');
                 document.getElementById('quizCard').classList.remove('d-none');
                 document.getElementById('progressBar').classList.remove('d-none');
 
-                // Обновить прогресс
                 updateProgressBar();
             }
         } catch (error) {
             console.error('Ошибка:', error);
             showAlert('danger', 'Произошла ошибка при начале квиза');
         } finally {
-            const startBtn = document.getElementById('startQuizBtn');
             startBtn.disabled = false;
             startBtn.innerHTML = originalText;
         }
@@ -289,12 +232,11 @@
         // Создать кнопки для вариантов ответов
         quizData.options.forEach((option, index) => {
             const col = document.createElement('div');
-            col.className = 'col-md-6 mb-3';
+            col.className = 'col-12 col-md-6';
 
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'btn btn-outline-primary btn-lg w-100 py-4 option-btn';
-            button.style.fontSize = '1.2rem';
             button.textContent = option;
 
             // Добавить обработчик выбора ответа

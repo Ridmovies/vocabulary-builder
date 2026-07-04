@@ -1,12 +1,10 @@
-<!-- templates/words.html -->
 {% extends "base.html" %}
 
 {% block title %}Мои слова{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <!-- Заголовок и кнопка добавления (без изменений) -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex mobile-stack justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h2 mb-1">Мои слова</h1>
             <p class="text-muted mb-0">Управляйте вашей личной базой слов</p>
@@ -16,7 +14,6 @@
         </a>
     </div>
 
-    <!-- Фильтры (без изменений) -->
     <div class="card mb-4 border-0 shadow-sm">
         <div class="card-header bg-light">
             <h5 class="mb-0">
@@ -26,8 +23,7 @@
         </div>
         <div class="card-body">
             <div class="row g-3">
-                <!-- Фильтр по категориям -->
-                <div class="col-md-8">
+                <div class="col-12 col-lg-8">
                     <label class="form-label fw-bold mb-2">
                         <i class="bi bi-tags me-1"></i>
                         Категории
@@ -42,8 +38,7 @@
                            value="{{ initial_category_ids|join(',') }}">
                 </div>
 
-                <!-- Показать избранные -->
-                <div class="col-md-2">
+                <div class="col-12 col-sm-6 col-lg-2">
                     <label class="form-label fw-bold mb-2">
                         <i class="bi bi-star me-1"></i>
                         Избранное
@@ -56,8 +51,7 @@
                     </div>
                 </div>
 
-                <!-- Количество слов -->
-                <div class="col-md-2">
+                <div class="col-12 col-sm-6 col-lg-2">
                     <label class="form-label fw-bold mb-2">
                         <i class="bi bi-list-ol me-1"></i>
                         На странице
@@ -70,9 +64,8 @@
                     </select>
                 </div>
 
-                <!-- Кнопки действий -->
                 <div class="col-12">
-                    <div class="d-flex gap-2 justify-content-end">
+                    <div class="d-grid d-sm-flex gap-2 justify-content-sm-end">
                         <button id="resetFilter" class="btn btn-outline-secondary">
                             <i class="bi bi-x-circle me-1"></i>
                             Сбросить
@@ -117,7 +110,7 @@
 
     <!-- Список слов -->
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <div class="card-header bg-light d-flex mobile-stack justify-content-between align-items-center">
             <h5 class="mb-0">
                 <i class="bi bi-journal-text me-2"></i>
                 Список слов
@@ -377,9 +370,6 @@ function renderCategoriesFilter() {
 
         const tag = document.createElement('span');
         tag.className = `badge category-tag ${isSelected ? 'bg-primary' : 'bg-secondary bg-opacity-50'}`;
-        tag.style.cursor = 'pointer';
-        tag.style.padding = '0.5em 0.75em';
-        tag.style.fontSize = '0.875em';
         tag.textContent = category.name;
 
         tag.addEventListener('click', () => {
@@ -461,9 +451,7 @@ async function loadWords() {
             const words = await response.json();
             renderWords(words);
 
-            // TODO: Нужно получать общее количество слов из API
-            // Пока используем длину массива как приблизительное значение
-            totalWords = words.length;
+                totalWords = words.length;
             updateStats(words);
 
         } else {
@@ -517,7 +505,7 @@ function renderWords(words) {
 
         html += `
         <div class="list-group-item border-0 ${index % 2 === 0 ? 'bg-light bg-opacity-50' : ''}">
-            <div class="row align-items-center">
+            <div class="row g-2 align-items-center">
                 <div class="col-md-4">
                     <div class="d-flex align-items-center">
                         <button class="btn btn-sm btn-link text-warning p-0 me-2"
@@ -543,7 +531,7 @@ function renderWords(words) {
                     <small class="text-muted">${createdAt}</small>
                 </div>
                 <div class="col-md-3">
-                    <div class="d-flex gap-1 justify-content-end">
+                    <div class="d-flex flex-wrap gap-2 justify-content-start justify-content-md-end word-actions">
                         <!-- НОВЫЕ КНОПКИ: Изображения -->
                         <button class="btn btn-sm btn-outline-success"
                                 onclick="showUploadImageModal(${word.id}, '${word.english}', '${word.russian}', '${word.image_url || ''}')"
